@@ -17,6 +17,7 @@ import { GuideService } from './guide.service';
 declare const THREE: any;
 
 interface Formula {
+  id: string;
   text: string;
   x: number;
   y: number;
@@ -65,7 +66,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private backgroundInterval: ReturnType<typeof setInterval> | null = null;
   private readonly FORMULA_VISIBLE_DURATION_MS = 4000;
   private readonly FORMULA_FADE_DURATION_MS = 1500;
-  private readonly answers: number[] = [2, 7, 10, 42, 64];
+  private readonly answers: number[] = [2, 7, 10, 21, 33, 42, 64, 85];
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -118,7 +119,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'digital-identity-card',
       title: 'Digital Identity',
       meta: 'Thông tin điện tử',
-      body: `<ul><li><b>Latent ID</b>: 𝑍Σ̴𝐑Ø</li><li><b>GitHub</b>: <a href="https://github.com/Minato-Makoto" target="_blank" rel="noopener">Minato-Makoto</a></li></ul>`,
+      body: `<ul><li><b>Latent ID</b>: 𝑍Σ̴𝐑Ø</li><li><b>Signature</b>: α + β ≈ 𝝅</li><li><b>GitHub</b>: <a href="https://github.com/Minato-Makoto" target="_blank" rel="noopener">Minato-Makoto</a></li></ul>`,
       layout: { scale: 0.25, position: { x: -150, y: 0, z: 0 } }
     },
      {
@@ -297,7 +298,30 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     const parse = () => `parseInt('${answer.toString(2)}', 2)`;
 
-    const strategies = [bitwise, power, mod, parse];
+    const sigma = () => {
+      const n = Math.floor(Math.random() * 5) + 2; // 2..6
+      const total = (n * (n + 1)) / 2;
+      const diff = answer - total;
+      let expr = `∑_{i=1}^{${n}} i`;
+      if (diff > 0) expr += ` + ${diff}`;
+      if (diff < 0) expr += ` - ${-diff}`;
+      return expr;
+    };
+
+    const alphaBeta = () => {
+      const a = Math.floor(Math.random() * answer);
+      const b = answer - a;
+      return `α=${a}, β=${b}, α+β`;
+    };
+
+    const piPower = () => {
+      const base = Math.floor(Math.PI ** 2);
+      const diff = answer - base;
+      const sign = diff >= 0 ? '+' : '-';
+      return `⌊𝝅²⌋ ${sign} ${Math.abs(diff)}`;
+    };
+
+    const strategies = [bitwise, power, mod, parse, sigma, alphaBeta, piPower];
     const expression = strategies[Math.floor(Math.random() * strategies.length)]();
     return `${expression} = ${answer}`;
   }
@@ -309,6 +333,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const cells: { x: number; y: number }[] = [];
     for (let x = 0; x < this.GRID_COLUMNS; x++) {
       for (let y = 0; y < this.GRID_ROWS; y++) {
+        // Skip central region reserved for title
+        if (x >= 4 && x <= 7 && y >= 2 && y <= 3) continue;
         cells.push({ x, y });
       }
     }
@@ -322,6 +348,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (!cell) return;
     const answer = this.answers[Math.floor(Math.random() * this.answers.length)];
     const formula: Formula = {
+      id:
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2),
       text: this.generateAdvancedFormula(answer),
       x: (cell.x / this.GRID_COLUMNS) * 100,
       y: (cell.y / this.GRID_ROWS) * 100,
@@ -330,7 +360,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     };
     this.backgroundFormulas.update(list => [...list, formula]);
 
-    requestAnimationFrame(() => formula.isVisible.set(true));
+    requestAnimationFrame(() => {
+      const el = document.querySelector(
+        `.math-formula[data-id="${formula.id}"]`
+      ) as HTMLElement | null;
+      if (el) {
+        el.textContent = '';
+        this.typewriter(el, formula.text, 20);
+      }
+      formula.isVisible.set(true);
+    });
 
     setTimeout(
       () => formula.isFadingOut.set(true),
@@ -345,9 +384,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private startBackgroundAnimation(): void {
     this.addAndAnimateNewFormula();
+    this.addAndAnimateNewFormula();
     this.backgroundInterval = setInterval(
       () => this.addAndAnimateNewFormula(),
-      this.FORMULA_VISIBLE_DURATION_MS / 2
+      this.FORMULA_VISIBLE_DURATION_MS / 3
     );
   }
 
