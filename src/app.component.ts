@@ -63,7 +63,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'harmony-card',
       title: 'Producer - Project Manager',
       meta: 'Harmony 2025 - Better With You',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1X-_4rjqvc4X_ZVYo5BYFDoEBzp_DtkwZ/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1X-_4rjqvc4X_ZVYo5BYFDoEBzp_DtkwZ/preview" width="1280" height="720" title="Harmony 2025 – Better With You" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       layout: { scale: 0.25, position: { x: 0, y: 240, z: -666 } }
     },
@@ -93,7 +93,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'motor-fest-card',
       title: 'Post-production supervisor',
       meta: 'Motor Fest 2023',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1LHlJL_vV7l8I4_F-JIutWN8wlMhoGaEn/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1LHlJL_vV7l8I4_F-JIutWN8wlMhoGaEn/preview" width="1280" height="720" title="Motor Fest 2023" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       layout: { scale: 0.25, position: { x: 0, y: 200, z: -600 } }
     },
@@ -108,7 +108,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'mv-le-card',
       title: 'Post-Production Supervisor',
       meta: 'MV Lé - Dr Roc',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1yeMXF7wVZBWE2W7VHUQvHY1k7gREsfjD/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1yeMXF7wVZBWE2W7VHUQvHY1k7gREsfjD/preview" width="1280" height="720" title="MV Lé - Dr Roc" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       layout: { scale: 0.25, position: { x: 0, y: -360, z: 0 } }
     },
@@ -116,7 +116,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'dong-co-lau-card',
       title: 'Post-Production Supervisor',
       meta: 'ĐỒNG CỎ LAU - HÀNH TRÌNH TỪ ĐẤT TRỜI ĐẾN TỔ ẤM',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1cN1AkKCYtoxowWyVDofOIZlX4cZnrhGS/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1cN1AkKCYtoxowWyVDofOIZlX4cZnrhGS/preview" width="1280" height="720" title="ĐỒNG CỎ LAU - HÀNH TRÌNH TỪ ĐẤT TRỜI ĐẾN TỔ ẤM" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       layout: { scale: 0.25, position: { x: -420, y: 0, z: -240 } }
     },
@@ -133,7 +133,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'ThaiLong-card',
       title: 'Post-Production Supervisor',
       meta: 'Thái Long Yến Tiệc',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1oFDR_ff0AHRXJuIFiQy8suxvZNKuA_Bg/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1oFDR_ff0AHRXJuIFiQy8suxvZNKuA_Bg/preview" width="1280" height="720" title="Thái Long Yến Tiệc" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       manualLayout: true,
       layout: { scale: 0.25, position: { x: 360, y: 450, z: -150 } }
@@ -151,7 +151,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'daydream-card',
       title: 'Producer - Project Manager',
       meta: 'RECAP DAY DREAMS FINAL 2024!',
-      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><a href="https://drive.google.com/file/d/1PsYIUeHpntiBvQT1aYqrY8rd0KGJlU4B/view" target="_blank" rel="noopener noreferrer">View video on Google Drive</a></div>`,
+      body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1PsYIUeHpntiBvQT1aYqrY8rd0KGJlU4B/preview" width="1280" height="720" title="RECAP DAY DREAMS FINAL 2024!" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       manualLayout: true,
       layout: { scale: 0.25, position: { x: -600, y: 150, z: 0 } }
