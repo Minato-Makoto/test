@@ -8,22 +8,12 @@ import {
   inject,
   ChangeDetectionStrategy,
   signal,
-  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
 
 // Make THREE available in the component context, as it's loaded from a script tag.
 declare const THREE: any;
-
-interface Formula {
-  id: string;
-  text: string;
-  x: number;
-  y: number;
-  isVisible: WritableSignal<boolean>;
-  isFadingOut: WritableSignal<boolean>;
-}
 
 interface CardData {
   id: string;
@@ -59,14 +49,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   fpsEl = viewChild<ElementRef<HTMLDivElement>>('fps');
 
   isActivating = signal(false);
-
-  backgroundFormulas = signal<Formula[]>([]);
-  private readonly GRID_COLUMNS = 12;
-  private readonly GRID_ROWS = 6;
-  private backgroundInterval: ReturnType<typeof setInterval> | null = null;
-  private readonly FORMULA_VISIBLE_DURATION_MS = 4000;
-  private readonly FORMULA_FADE_DURATION_MS = 1500;
-  private readonly answers: number[] = [2, 7, 10, 21, 33, 42, 64, 85];
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -119,7 +101,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'digital-identity-card',
       title: 'Digital Identity',
       meta: 'Thông tin điện tử',
-      body: `<ul><li><b>Latent ID</b>: 𝑍Σ̴𝐑Ø</li><li><b>Signature</b>: α + β ≈ 𝝅</li><li><b>GitHub</b>: <a href="https://github.com/Minato-Makoto" target="_blank" rel="noopener">Minato-Makoto</a></li></ul>`,
+      body: `<ul><li><b>Latent ID</b>: 𝑍Σ̴𝐑Ø</li><li><b>GitHub</b>: <a href="https://github.com/Minato-Makoto" target="_blank" rel="noopener">Minato-Makoto</a></li></ul>`,
       layout: { scale: 0.25, position: { x: -150, y: 0, z: 0 } }
     },
      {
@@ -250,7 +232,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.boot();
-    this.startBackgroundAnimation();
   }
 
   ngOnDestroy(): void {
@@ -258,137 +239,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (this.threeState._ro) this.threeState._ro.disconnect();
     if (this.threeState._raf) cancelAnimationFrame(this.threeState._raf);
     this._listeners.forEach(unlisten => unlisten());
-    if (this.backgroundInterval) clearInterval(this.backgroundInterval);
-  }
-
-  // --- Floating Math Formulas ---
-  private generateAdvancedFormula(answer: number): string {
-    const bitwise = () => {
-      let a: number, b: number, c: number;
-      do {
-        a = Math.floor(Math.random() * 128);
-        b = Math.floor(Math.random() * 128);
-        c = answer | Math.floor(Math.random() * 128);
-      } while (((a ^ b) & c) !== answer);
-      return `((${a} ^ ${b}) & ${c})`;
-    };
-
-    const power = () => {
-      const pairs: Array<[number, number]> = [];
-      for (let base = 2; base <= 10; base++) {
-        for (let exp = 2; exp <= 6; exp++) {
-          if (Math.pow(base, exp) === answer) {
-            pairs.push([base, exp]);
-          }
-        }
-      }
-      if (pairs.length > 0) {
-        const [b, e] = pairs[Math.floor(Math.random() * pairs.length)];
-        return `${b} ** ${e}`;
-      }
-      return bitwise();
-    };
-
-    const mod = () => {
-      const b = answer + Math.floor(Math.random() * 5) + 1;
-      const m = Math.floor(Math.random() * 5) + 1;
-      const n = answer + b * m;
-      return `${n} % ${b}`;
-    };
-
-    const parse = () => `parseInt('${answer.toString(2)}', 2)`;
-
-    const sigma = () => {
-      const n = Math.floor(Math.random() * 5) + 2; // 2..6
-      const total = (n * (n + 1)) / 2;
-      const diff = answer - total;
-      let expr = `∑_{i=1}^{${n}} i`;
-      if (diff > 0) expr += ` + ${diff}`;
-      if (diff < 0) expr += ` - ${-diff}`;
-      return expr;
-    };
-
-    const alphaBeta = () => {
-      const a = Math.floor(Math.random() * answer);
-      const b = answer - a;
-      return `α=${a}, β=${b}, α+β`;
-    };
-
-    const piPower = () => {
-      const base = Math.floor(Math.PI ** 2);
-      const diff = answer - base;
-      const sign = diff >= 0 ? '+' : '-';
-      return `⌊𝝅²⌋ ${sign} ${Math.abs(diff)}`;
-    };
-
-    const strategies = [bitwise, power, mod, parse, sigma, alphaBeta, piPower];
-    const expression = strategies[Math.floor(Math.random() * strategies.length)]();
-    return `${expression} = ${answer}`;
-  }
-
-  private findAvailableCell(): { x: number; y: number } | null {
-    const occupied = new Set(
-      this.backgroundFormulas().map(f => `${f.x},${f.y}`)
-    );
-    const cells: { x: number; y: number }[] = [];
-    for (let x = 0; x < this.GRID_COLUMNS; x++) {
-      for (let y = 0; y < this.GRID_ROWS; y++) {
-        // Skip central region reserved for title
-        if (x >= 4 && x <= 7 && y >= 2 && y <= 3) continue;
-        cells.push({ x, y });
-      }
-    }
-    const free = cells.filter(c => !occupied.has(`${c.x},${c.y}`));
-    if (free.length === 0) return null;
-    return free[Math.floor(Math.random() * free.length)];
-  }
-
-  private addAndAnimateNewFormula(): void {
-    const cell = this.findAvailableCell();
-    if (!cell) return;
-    const answer = this.answers[Math.floor(Math.random() * this.answers.length)];
-    const formula: Formula = {
-      id:
-        typeof crypto !== 'undefined' && 'randomUUID' in crypto
-          ? crypto.randomUUID()
-          : Math.random().toString(36).slice(2),
-      text: this.generateAdvancedFormula(answer),
-      x: (cell.x / this.GRID_COLUMNS) * 100,
-      y: (cell.y / this.GRID_ROWS) * 100,
-      isVisible: signal(false),
-      isFadingOut: signal(false),
-    };
-    this.backgroundFormulas.update(list => [...list, formula]);
-
-    requestAnimationFrame(() => {
-      const el = document.querySelector(
-        `.math-formula[data-id="${formula.id}"]`
-      ) as HTMLElement | null;
-      if (el) {
-        el.textContent = '';
-        this.typewriter(el, formula.text, 20);
-      }
-      formula.isVisible.set(true);
-    });
-
-    setTimeout(
-      () => formula.isFadingOut.set(true),
-      this.FORMULA_VISIBLE_DURATION_MS
-    );
-    setTimeout(
-      () =>
-        this.backgroundFormulas.update(list => list.filter(f => f !== formula)),
-      this.FORMULA_VISIBLE_DURATION_MS + this.FORMULA_FADE_DURATION_MS
-    );
-  }
-
-  private startBackgroundAnimation(): void {
-    this.addAndAnimateNewFormula();
-    this.addAndAnimateNewFormula();
-    this.backgroundInterval = setInterval(
-      () => this.addAndAnimateNewFormula(),
-      this.FORMULA_VISIBLE_DURATION_MS / 3
-    );
   }
 
   // --- Boot Logic ---

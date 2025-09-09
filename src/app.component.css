@@ -37,56 +37,6 @@
 
 :host #veiled-container.hidden { opacity:0; pointer-events:none; }
 
-/* Floating Math Formulas */
-:host .background-formulas {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-:host .math-formula {
-  position: absolute;
-  font-family: 'VT323', monospace;
-  color: var(--terminal-white);
-  opacity: 0;
-  transition: opacity 1.5s;
-  -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 50%);
-  -webkit-mask-size: 200% 100%;
-  mask-image: linear-gradient(90deg, #000 50%, transparent 50%);
-  mask-size: 200% 100%;
-  text-shadow: 0 0 2px var(--terminal-green);
-}
-
-:host .math-formula::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.1) 0,
-    rgba(255, 255, 255, 0.1) 1px,
-    transparent 1px,
-    transparent 2px
-  );
-  pointer-events: none;
-}
-
-:host .math-formula.visible {
-  opacity: 0.24;
-}
-
-:host .math-formula.fading-out {
-  animation: wipe 1.5s forwards;
-}
-
-@keyframes wipe {
-  to {
-    -webkit-mask-position: 200% 0;
-    mask-position: 200% 0;
-    opacity: 0;
-  }
-}
-
 /* Transition for fade-out effect */
 :host #veiled-container > * {
   transition: opacity 0.4s ease-out;
@@ -130,12 +80,13 @@
   font-size: 28px;
 }
 
-:host #btn-activate {
+:host #btn-activate,
+:host #btn-mobile {
   font-family: 'VT323', monospace;
   background: none;
   border: none;
   color: var(--terminal-white);
-  transform: scale(1);
+  scale: 1;
   padding: 12px 24px;
   border-radius: 0;
   cursor: pointer;
@@ -147,35 +98,42 @@
 }
 
 :host #btn-activate::before,
-:host #btn-activate::after {
+:host #btn-activate::after,
+:host #btn-mobile::before,
+:host #btn-mobile::after {
   content: '';
   opacity: 0;
 }
 
-:host #btn-activate::before {
+:host #btn-activate::before,
+:host #btn-mobile::before {
   margin-right: 8px;
 }
 
-:host #btn-activate::after {
+:host #btn-activate::after,
+:host #btn-mobile::after {
   margin-left: 8px;
 }
 
-:host #btn-activate:hover {
+:host #btn-activate:hover,
+:host #btn-mobile:hover {
   background-color: var(--terminal-white);
   color: #000;
 }
 
-:host #btn-activate:hover::before {
+:host #btn-activate:hover::before,
+:host #btn-mobile:hover::before {
   content: '🞂';
   opacity: 1;
 }
 
-:host #btn-activate:hover::after {
+:host #btn-activate:hover::after,
+:host #btn-mobile:hover::after {
   content: '🞀';
   opacity: 1;
 }
-
-:host #btn-activate:disabled {
+:host #btn-activate:disabled,
+:host #btn-mobile:disabled {
   cursor: wait;
   animation: none;
   opacity: 0.7;
@@ -325,7 +283,8 @@
     font-size: 24px;
   }
 
-  :host #btn-activate {
+  :host #btn-activate,
+  :host #btn-mobile {
     font-size: 28px;
   }
 }
@@ -341,7 +300,8 @@
     padding: 5px 10px;
   }
 
-  :host #btn-activate {
+  :host #btn-activate,
+  :host #btn-mobile {
     font-size: 22px;
     padding: 10px 20px;
   }
