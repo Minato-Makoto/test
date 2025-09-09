@@ -8,12 +8,21 @@ import {
   inject,
   ChangeDetectionStrategy,
   signal,
+  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
 
 // Make THREE available in the component context, as it's loaded from a script tag.
 declare const THREE: any;
+
+interface Formula {
+  text: string;
+  x: number;
+  y: number;
+  isVisible: WritableSignal<boolean>;
+  isFadingOut: WritableSignal<boolean>;
+}
 
 interface CardData {
   id: string;
@@ -50,10 +59,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   isActivating = signal(false);
 
-  private ANSWERS: number[] = [3, 5, 8, 13, 21];
-  private recentFormulas: string[] = [];
-  private formulaInterval: any;
-  private typingTimers = new Set<any>();
+  backgroundFormulas = signal<Formula[]>([]);
+  private readonly GRID_COLUMNS = 12;
+  private readonly GRID_ROWS = 6;
+  private backgroundInterval: ReturnType<typeof setInterval> | null = null;
   private readonly FORMULA_VISIBLE_DURATION_MS = 4000;
   private readonly FORMULA_FADE_DURATION_MS = 1500;
 
@@ -239,11 +248,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.boot();
-    this.spawnFormula();
-    this.formulaInterval = setInterval(
-      () => this.spawnFormula(),
-      this.FORMULA_VISIBLE_DURATION_MS + this.FORMULA_FADE_DURATION_MS
-    );
+    this.startBackgroundAnimation();
   }
 
   ngOnDestroy(): void {
@@ -251,117 +256,70 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (this.threeState._ro) this.threeState._ro.disconnect();
     if (this.threeState._raf) cancelAnimationFrame(this.threeState._raf);
     this._listeners.forEach(unlisten => unlisten());
-    if (this.formulaInterval) clearInterval(this.formulaInterval);
-    this.typingTimers.forEach(id => clearInterval(id));
+    if (this.backgroundInterval) clearInterval(this.backgroundInterval);
   }
 
   // --- Floating Math Formulas ---
-  private nextAnswer(): number {
-    if (this.ANSWERS.length === 0) {
-      this.ANSWERS = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 1);
-    }
-    return this.ANSWERS.pop()!;
-  }
-
-  private generateFormula(answer?: number): string {
-    const target = answer ?? this.nextAnswer();
+  private generateFormula(): string {
     const ops = ['+', '-', '*', '/'];
-    let op = ops[Math.floor(Math.random() * ops.length)];
-    let a: number;
-    let b: number;
-
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
     switch (op) {
-      case '+':
-        a = Math.floor(Math.random() * target);
-        b = target - a;
-        break;
       case '-':
-        a = Math.floor(Math.random() * 10) + target;
-        b = a - target;
-        break;
-      case '*':
-        const factors: number[] = [];
-        for (let i = 1; i <= 10; i++) if (target % i === 0) factors.push(i);
-        if (factors.length === 0) {
-          op = '+';
-          a = Math.floor(Math.random() * target);
-          b = target - a;
-        } else {
-          a = factors[Math.floor(Math.random() * factors.length)];
-          b = target / a;
-        }
-        break;
+        return `${a + b} - ${a}`;
       case '/':
-        b = Math.floor(Math.random() * 9) + 1;
-        a = target * b;
-        break;
+        return `${a * b} / ${b}`;
+      default:
+        return `${a} ${op} ${b}`;
     }
-
-    return `${a} ${op} ${b}`;
   }
 
-  private nextFormula(): string {
-    let formula: string;
-    let attempts = 0;
-    do {
-      formula = this.generateFormula();
-      attempts++;
-    } while (this.recentFormulas.includes(formula) && attempts < 5);
-
-    this.recentFormulas.push(formula);
-    if (this.recentFormulas.length > 10) this.recentFormulas.shift();
-    return formula;
-  }
-
-  private typeFormula(el: HTMLElement, text: string, speed = 50): Promise<void> {
-    return new Promise(resolve => {
-      let i = 0;
-      const timer = setInterval(() => {
-        el.textContent = text.slice(0, i + 1);
-        i++;
-        if (i >= text.length) {
-          clearInterval(timer);
-          this.typingTimers.delete(timer);
-          resolve();
-        }
-      }, speed);
-      this.typingTimers.add(timer);
-    });
-  }
-
-  private async spawnFormula(): Promise<void> {
-    const container = this.veiledContainer()?.nativeElement;
-    if (!container) return;
-
-    const span = this.renderer2.createElement('span');
-    this.renderer2.addClass(span, 'math-formula');
-
-    const rect = container.getBoundingClientRect();
-    this.renderer2.setStyle(span, 'left', `${Math.random() * rect.width}px`);
-    this.renderer2.setStyle(span, 'top', `${Math.random() * rect.height}px`);
-
-    this.renderer2.appendChild(container, span);
-
-    const formula = this.nextFormula();
-
-    await new Promise<void>(resolve => {
-      requestAnimationFrame(() => {
-        this.renderer2.addClass(span, 'visible');
-        this.typeFormula(span, formula, 40).then(resolve);
-      });
-    });
-
-    const unlisten = this.renderer2.listen(span, 'transitionend', () => {
-      unlisten();
-      if (span.parentNode) {
-        this.renderer2.removeChild(container, span);
+  private findAvailableCell(): { x: number; y: number } | null {
+    const occupied = new Set(
+      this.backgroundFormulas().map(f => `${f.x},${f.y}`)
+    );
+    const cells: { x: number; y: number }[] = [];
+    for (let x = 0; x < this.GRID_COLUMNS; x++) {
+      for (let y = 0; y < this.GRID_ROWS; y++) {
+        cells.push({ x, y });
       }
-    });
-    this._listeners.push(unlisten);
+    }
+    const free = cells.filter(c => !occupied.has(`${c.x},${c.y}`));
+    if (free.length === 0) return null;
+    return free[Math.floor(Math.random() * free.length)];
+  }
+
+  private addAndAnimateNewFormula(): void {
+    const cell = this.findAvailableCell();
+    if (!cell) return;
+    const formula: Formula = {
+      text: this.generateFormula(),
+      x: (cell.x / this.GRID_COLUMNS) * 100,
+      y: (cell.y / this.GRID_ROWS) * 100,
+      isVisible: signal(false),
+      isFadingOut: signal(false),
+    };
+    this.backgroundFormulas.update(list => [...list, formula]);
+
+    requestAnimationFrame(() => formula.isVisible.set(true));
 
     setTimeout(
-      () => this.renderer2.addClass(span, 'fading-out'),
+      () => formula.isFadingOut.set(true),
       this.FORMULA_VISIBLE_DURATION_MS
+    );
+    setTimeout(
+      () =>
+        this.backgroundFormulas.update(list => list.filter(f => f !== formula)),
+      this.FORMULA_VISIBLE_DURATION_MS + this.FORMULA_FADE_DURATION_MS
+    );
+  }
+
+  private startBackgroundAnimation(): void {
+    this.addAndAnimateNewFormula();
+    this.backgroundInterval = setInterval(
+      () => this.addAndAnimateNewFormula(),
+      this.FORMULA_VISIBLE_DURATION_MS / 2
     );
   }
 
