@@ -65,6 +65,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private backgroundInterval: ReturnType<typeof setInterval> | null = null;
   private readonly FORMULA_VISIBLE_DURATION_MS = 4000;
   private readonly FORMULA_FADE_DURATION_MS = 1500;
+  private readonly answers: number[] = [2, 7, 10, 42, 64];
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -260,19 +261,45 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   // --- Floating Math Formulas ---
-  private generateFormula(): string {
-    const ops = ['+', '-', '*', '/'];
-    const op = ops[Math.floor(Math.random() * ops.length)];
-    const a = Math.floor(Math.random() * 9) + 1;
-    const b = Math.floor(Math.random() * 9) + 1;
-    switch (op) {
-      case '-':
-        return `${a + b} - ${a}`;
-      case '/':
-        return `${a * b} / ${b}`;
-      default:
-        return `${a} ${op} ${b}`;
-    }
+  private generateAdvancedFormula(answer: number): string {
+    const bitwise = () => {
+      let a: number, b: number, c: number;
+      do {
+        a = Math.floor(Math.random() * 128);
+        b = Math.floor(Math.random() * 128);
+        c = answer | Math.floor(Math.random() * 128);
+      } while (((a ^ b) & c) !== answer);
+      return `((${a} ^ ${b}) & ${c})`;
+    };
+
+    const power = () => {
+      const pairs: Array<[number, number]> = [];
+      for (let base = 2; base <= 10; base++) {
+        for (let exp = 2; exp <= 6; exp++) {
+          if (Math.pow(base, exp) === answer) {
+            pairs.push([base, exp]);
+          }
+        }
+      }
+      if (pairs.length > 0) {
+        const [b, e] = pairs[Math.floor(Math.random() * pairs.length)];
+        return `${b} ** ${e}`;
+      }
+      return bitwise();
+    };
+
+    const mod = () => {
+      const b = answer + Math.floor(Math.random() * 5) + 1;
+      const m = Math.floor(Math.random() * 5) + 1;
+      const n = answer + b * m;
+      return `${n} % ${b}`;
+    };
+
+    const parse = () => `parseInt('${answer.toString(2)}', 2)`;
+
+    const strategies = [bitwise, power, mod, parse];
+    const expression = strategies[Math.floor(Math.random() * strategies.length)]();
+    return `${expression} = ${answer}`;
   }
 
   private findAvailableCell(): { x: number; y: number } | null {
@@ -293,8 +320,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private addAndAnimateNewFormula(): void {
     const cell = this.findAvailableCell();
     if (!cell) return;
+    const answer = this.answers[Math.floor(Math.random() * this.answers.length)];
     const formula: Formula = {
-      text: this.generateFormula(),
+      text: this.generateAdvancedFormula(answer),
       x: (cell.x / this.GRID_COLUMNS) * 100,
       y: (cell.y / this.GRID_ROWS) * 100,
       isVisible: signal(false),
