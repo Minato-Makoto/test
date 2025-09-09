@@ -56,6 +56,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private recentFormulas: string[] = [];
   private formulaInterval: any;
   private typingTimers = new Set<any>();
+  private readonly FORMULA_VISIBLE_DURATION_MS = 4000;
+  private readonly FORMULA_FADE_DURATION_MS = 1500;
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -241,7 +243,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (this.router.url !== '/') return;
     this.boot();
     this.spawnFormula();
-    this.formulaInterval = setInterval(() => this.spawnFormula(), 4000);
+    this.formulaInterval = setInterval(
+      () => this.spawnFormula(),
+      this.FORMULA_VISIBLE_DURATION_MS + this.FORMULA_FADE_DURATION_MS
+    );
   }
 
   ngOnDestroy(): void {
@@ -357,7 +362,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
     this._listeners.push(unlisten);
 
-    setTimeout(() => this.renderer2.addClass(span, 'fading-out'), 300);
+    setTimeout(
+      () => this.renderer2.addClass(span, 'fading-out'),
+      this.FORMULA_VISIBLE_DURATION_MS
+    );
   }
 
   // --- Boot Logic ---
