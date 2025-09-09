@@ -57,16 +57,16 @@
 
 :host .math-formula {
   position: absolute;
-  color: var(--terminal-green);
+  color: var(--terminal-white);
   font-family: 'Cambria Math', 'Times New Roman', serif;
-  font-size: 24px;
+  font-size: 18px;
   opacity: 0;
   white-space: nowrap;
   transition: opacity 1.5s linear;
 }
 
 :host .math-formula.visible {
-  opacity: 1;
+  opacity: 0.24;
 }
 
 :host .math-formula.fading-out {
