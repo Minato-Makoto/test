@@ -136,7 +136,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1oFDR_ff0AHRXJuIFiQy8suxvZNKuA_Bg/preview" width="1280" height="720" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       manualLayout: true,
-      layout: { scale: 0.25, position: { x: 300, y: 450, z: -150 } }
+      layout: { scale: 0.25, position: { x: 360, y: 450, z: -150 } }
     },
     {
       id: 'hithegioi-card',
@@ -145,7 +145,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       body: `<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/wBWQsfxG4eE" title="YouTube video player" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`,
       opts: { noexpand: true, style: this.getVideoCardStyle() },
       manualLayout: true,
-      layout: { scale: 0.25, position: { x: 900, y: 400, z: -600 } }
+      layout: { scale: 0.25, position: { x: 1000, y: 400, z: -600 } }
     },
     {
       id: 'daydream-card',
