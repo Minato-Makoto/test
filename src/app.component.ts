@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
-import { Router } from '@angular/router';
 
 // Make THREE available in the component context, as it's loaded from a script tag.
 declare const THREE: any;
@@ -39,7 +38,6 @@ interface CardData {
 export class AppComponent implements AfterViewInit, OnDestroy {
   private renderer2 = inject(Renderer2);
   private guideService = inject(GuideService);
-  private router = inject(Router);
 
   // View Children for DOM elements
   veiledContainer = viewChild<ElementRef<HTMLDivElement>>('veiledContainer');
@@ -240,7 +238,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   };
 
   ngAfterViewInit(): void {
-    if (this.router.url !== '/') return;
     this.boot();
     this.spawnFormula();
     this.formulaInterval = setInterval(

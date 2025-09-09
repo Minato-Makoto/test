@@ -67,7 +67,11 @@
   pointer-events: none;
 }
 
-:host .math-formula.visible { opacity: 0.24; }
+:host .math-formula.visible {
+  opacity: 0.24;
+  mask-position: 0% 0%;
+  -webkit-mask-position: 0% 0%;
+}
 
 :host .math-formula.fading-out {
   transition: mask-position 1.5s, opacity 1.5s;
