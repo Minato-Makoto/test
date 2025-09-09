@@ -86,7 +86,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       id: 'external-ids-card',
       title: 'External IDs',
       meta: 'Social Network',
-      body: `<ul>${[{ label: "LinkedIn", handle: "Lương Bảo Huy", url: "https://www.linkedin.com/in/b%E1%BA%A3o-huy-l%C6%B0%C6%A1ng-1653a41a3", status: "OK" }, { label: "Instagram", handle: "@minatomakoto", url: "https://www.instagram.com/minatomakoto", status: "OK" }, { label: "Facebook", handle: "minatoks", url: "https://www.facebook.com/minatoks", status: "OK" }, { label: "YouTube", handle: "@minatomakoto", url: "https://www.youtube.com/@minatomakoto", status: "OK" }, { label: "TikTok", handle: "@minatomakoto", url: "https://www.tiktok.com/@minatomakoto", status: "OK" }].map(e => `<li>${this.esc(e.label)}: <a href=\"${e.url}\" target=\"_blank\" rel=\"noopener\">${this.esc(e.handle)}</a></li>`).join('')}</ul>`,
+      body: `<ul>${[{ label: "LinkedIn", handle: "Lương Bảo Huy", url: "https://www.linkedin.com/in/b%E1%BA%A3o-huy-l%C6%B0%C6%A1ng-1653a41a3", status: "OK" }, { label: "Instagram", handle: "@minatomakoto", url: "https://www.instagram.com/minatomakoto", status: "OK" }, { label: "Facebook", handle: "MinatoMakoto", url: "https://www.facebook.com/MinatoMakoto/", status: "OK" }, { label: "YouTube", handle: "@minatomakoto", url: "https://www.youtube.com/@minatomakoto", status: "OK" }, { label: "TikTok", handle: "@minatomakoto", url: "https://www.tiktok.com/@minatomakoto", status: "OK" }].map(e => `<li>${this.esc(e.label)}: <a href=\"${e.url}\" target=\"_blank\" rel=\"noopener\">${this.esc(e.handle)}</a></li>`).join('')}</ul>`,
       layout: { scale: 0.25, position: { x: 50, y: 100, z: 0 } }
     },
     {
