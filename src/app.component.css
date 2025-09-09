@@ -70,10 +70,11 @@
 :host .math-formula.visible { opacity: 0.24; }
 
 :host .math-formula.fading-out {
-  transition: mask-position 1.5s;
-  -webkit-transition: -webkit-mask-position 1.5s;
+  transition: mask-position 1.5s, opacity 1.5s;
+  -webkit-transition: -webkit-mask-position 1.5s, opacity 1.5s;
   mask-position: 0% 0%;
   -webkit-mask-position: 0% 0%;
+  opacity: 0;
 }
 
 /* Transition for fade-out effect */
