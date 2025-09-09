@@ -42,7 +42,7 @@
   position: absolute;
   font-family: 'VT323', monospace;
   color: var(--terminal-white);
-  text-shadow: 0 0 5px var(--terminal-white);
+  text-shadow: none;
   opacity: 0;
   mask-image: linear-gradient(to left, transparent 60%, black 40%);
   -webkit-mask-image: linear-gradient(to left, transparent 60%, black 40%);
