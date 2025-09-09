@@ -8,8 +8,8 @@
         [style.top.%]="formula.y"
         [class.visible]="formula.isVisible()"
         [class.fading-out]="formula.isFadingOut()"
-        >{{ formula.text }}</span
-      >
+        [attr.data-id]="formula.id"
+      ></span>
     }
   </div>
   <div #titleVeiled class="title-veiled">&nbsp;</div>

@@ -50,6 +50,25 @@
   color: var(--terminal-white);
   opacity: 0;
   transition: opacity 1.5s;
+  -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 50%);
+  -webkit-mask-size: 200% 100%;
+  mask-image: linear-gradient(90deg, #000 50%, transparent 50%);
+  mask-size: 200% 100%;
+  text-shadow: 0 0 2px var(--terminal-green);
+}
+
+:host .math-formula::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.1) 0,
+    rgba(255, 255, 255, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
 }
 
 :host .math-formula.visible {
@@ -57,7 +76,15 @@
 }
 
 :host .math-formula.fading-out {
-  opacity: 0;
+  animation: wipe 1.5s forwards;
+}
+
+@keyframes wipe {
+  to {
+    -webkit-mask-position: 200% 0;
+    mask-position: 200% 0;
+    opacity: 0;
+  }
 }
 
 /* Transition for fade-out effect */
