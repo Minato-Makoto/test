@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
+import { Router } from '@angular/router';
 
 // Make THREE available in the component context, as it's loaded from a script tag.
 declare const THREE: any;
@@ -38,6 +39,7 @@ interface CardData {
 export class AppComponent implements AfterViewInit, OnDestroy {
   private renderer2 = inject(Renderer2);
   private guideService = inject(GuideService);
+  private router = inject(Router);
 
   // View Children for DOM elements
   veiledContainer = viewChild<ElementRef<HTMLDivElement>>('veiledContainer');
@@ -49,6 +51,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   fpsEl = viewChild<ElementRef<HTMLDivElement>>('fps');
 
   isActivating = signal(false);
+
+  private readonly FORMULAS = [
+    'E = mc^2',
+    'e^{iπ}+1=0',
+    'a^2 + b^2 = c^2',
+    '∑_{n=1}^∞ 1/n^2 = π^2/6',
+    '∫_{-∞}^{∞} e^{-x^2} dx = √π',
+  ];
+  private formulaQueue: string[] = [];
+  private formulaInterval: any;
+  private typingTimers = new Set<any>();
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -231,7 +244,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   };
 
   ngAfterViewInit(): void {
+    if (this.router.url !== '/') return;
     this.boot();
+    this.spawnFormula();
+    this.formulaInterval = setInterval(() => this.spawnFormula(), 4000);
   }
 
   ngOnDestroy(): void {
@@ -239,6 +255,64 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (this.threeState._ro) this.threeState._ro.disconnect();
     if (this.threeState._raf) cancelAnimationFrame(this.threeState._raf);
     this._listeners.forEach(unlisten => unlisten());
+    if (this.formulaInterval) clearInterval(this.formulaInterval);
+    this.typingTimers.forEach(id => clearInterval(id));
+  }
+
+  // --- Floating Math Formulas ---
+  private nextFormula(): string {
+    if (this.formulaQueue.length === 0) {
+      this.formulaQueue = [...this.FORMULAS];
+      for (let i = this.formulaQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.formulaQueue[i], this.formulaQueue[j]] = [this.formulaQueue[j], this.formulaQueue[i]];
+      }
+    }
+    return this.formulaQueue.pop()!;
+  }
+
+  private typeFormula(el: HTMLElement, text: string, speed = 50): Promise<void> {
+    return new Promise(resolve => {
+      let i = 0;
+      const timer = setInterval(() => {
+        el.textContent = text.slice(0, i + 1);
+        i++;
+        if (i >= text.length) {
+          clearInterval(timer);
+          this.typingTimers.delete(timer);
+          resolve();
+        }
+      }, speed);
+      this.typingTimers.add(timer);
+    });
+  }
+
+  private async spawnFormula(): Promise<void> {
+    const container = this.veiledContainer()?.nativeElement;
+    if (!container) return;
+
+    const span = this.renderer2.createElement('span');
+    this.renderer2.addClass(span, 'math-formula');
+
+    const rect = container.getBoundingClientRect();
+    this.renderer2.setStyle(span, 'left', `${Math.random() * rect.width}px`);
+    this.renderer2.setStyle(span, 'top', `${Math.random() * rect.height}px`);
+
+    this.renderer2.appendChild(container, span);
+
+    requestAnimationFrame(() => this.renderer2.addClass(span, 'visible'));
+
+    const formula = this.nextFormula();
+    await this.typeFormula(span, formula, 40);
+
+    this.renderer2.addClass(span, 'fading-out');
+    const unlisten = this.renderer2.listen(span, 'transitionend', () => {
+      unlisten();
+      if (span.parentNode) {
+        this.renderer2.removeChild(container, span);
+      }
+    });
+    this._listeners.push(unlisten);
   }
 
   // --- Boot Logic ---
