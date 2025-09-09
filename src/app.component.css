@@ -97,10 +97,40 @@
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
+:host #btn-activate::before,
+:host #btn-activate::after,
+:host #btn-mobile::before,
+:host #btn-mobile::after {
+  content: '';
+  opacity: 0;
+}
+
+:host #btn-activate::before,
+:host #btn-mobile::before {
+  margin-right: 8px;
+}
+
+:host #btn-activate::after,
+:host #btn-mobile::after {
+  margin-left: 8px;
+}
+
 :host #btn-activate:hover,
 :host #btn-mobile:hover {
   background-color: var(--terminal-white);
   color: #000;
+}
+
+:host #btn-activate:hover::before,
+:host #btn-mobile:hover::before {
+  content: '🞂';
+  opacity: 1;
+}
+
+:host #btn-activate:hover::after,
+:host #btn-mobile:hover::after {
+  content: '🞀';
+  opacity: 1;
 }
 :host #btn-activate:disabled,
 :host #btn-mobile:disabled {
