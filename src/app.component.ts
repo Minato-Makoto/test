@@ -300,12 +300,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     this.renderer2.appendChild(container, span);
 
-    requestAnimationFrame(() => this.renderer2.addClass(span, 'visible'));
-
     const formula = this.nextFormula();
-    await this.typeFormula(span, formula, 40);
 
-    this.renderer2.addClass(span, 'fading-out');
+    await new Promise<void>(resolve => {
+      requestAnimationFrame(() => {
+        this.renderer2.addClass(span, 'visible');
+        this.typeFormula(span, formula, 40).then(resolve);
+      });
+    });
+
     const unlisten = this.renderer2.listen(span, 'transitionend', () => {
       unlisten();
       if (span.parentNode) {
@@ -313,6 +316,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       }
     });
     this._listeners.push(unlisten);
+
+    setTimeout(() => this.renderer2.addClass(span, 'fading-out'), 300);
   }
 
   // --- Boot Logic ---
