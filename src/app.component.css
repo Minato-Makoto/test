@@ -49,25 +49,15 @@
   font-family: 'VT323', monospace;
   color: var(--terminal-white);
   opacity: 0;
-  mask-image: linear-gradient(to left, transparent 60%, black 40%);
-  -webkit-mask-image: linear-gradient(to left, transparent 60%, black 40%);
-  mask-size: 200% 100%;
-  -webkit-mask-size: 200% 100%;
-  mask-position: 100% 0%;
-  -webkit-mask-position: 100% 0%;
-  transition: opacity 1.5s, mask-position 1.5s;
+  transition: opacity 1.5s;
 }
 
 :host .math-formula.visible {
   opacity: 0.24;
-  mask-position: 0% 0%;
-  -webkit-mask-position: 0% 0%;
 }
 
 :host .math-formula.fading-out {
   opacity: 0;
-  mask-position: 100% 0%;
-  -webkit-mask-position: 100% 0%;
 }
 
 /* Transition for fade-out effect */
