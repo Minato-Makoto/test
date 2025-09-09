@@ -80,10 +80,11 @@
   font-size: 28px;
 }
 
-:host #btn-activate {
+:host #btn-activate,
+:host #btn-mobile {
   font-family: 'VT323', monospace;
   background: none;
-  border: 2px solid var(--terminal-white);
+  border: none;
   color: var(--terminal-white);
   scale: 1;
   padding: 12px 24px;
@@ -96,15 +97,17 @@
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-:host #btn-activate:hover {
+:host #btn-activate:hover,
+:host #btn-mobile:hover {
   background-color: var(--terminal-white);
   color: #000;
 }
-:host #btn-activate:disabled { 
-  cursor: wait; 
-  animation: none; 
-  opacity: 0.7; 
-  background-color: transparent !important; 
+:host #btn-activate:disabled,
+:host #btn-mobile:disabled {
+  cursor: wait;
+  animation: none;
+  opacity: 0.7;
+  background-color: transparent !important;
   color: var(--terminal-white) !important;
 }
 
@@ -250,7 +253,8 @@
     font-size: 24px;
   }
 
-  :host #btn-activate {
+  :host #btn-activate,
+  :host #btn-mobile {
     font-size: 28px;
   }
 }
@@ -266,7 +270,8 @@
     padding: 5px 10px;
   }
 
-  :host #btn-activate {
+  :host #btn-activate,
+  :host #btn-mobile {
     font-size: 22px;
     padding: 10px 20px;
   }
