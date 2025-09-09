@@ -1,5 +1,19 @@
 <!-- Veiled State -->
 <div #veiledContainer id="veiled-container" [class.activating]="isActivating()">
+  <!-- Background Animation -->
+  <div class="background-formulas">
+    @for (formula of backgroundFormulas(); track formula.id) {
+      <span
+        class="math-formula"
+        [style.top]="formula.top"
+        [style.left]="formula.left"
+        [class.visible]="formula.isVisible()"
+        [class.fading-out]="formula.isFadingOut()">
+        {{ formula.typedText }}
+      </span>
+    }
+  </div>
+
   <div #titleVeiled class="title-veiled">&nbsp;</div>
   <div class="badge-veiled">Photographer ⦁ Designer ⦁ Producer ⦁ Editor ⦁ Colorist ⦁ etc </div>
   <span #kaoVeiled id="kao-veiled" class="kao" [class.spinning]="isActivating()">⛧</span>
@@ -7,11 +21,8 @@
     @if (isActivating()) {
       CONNECTING...
     } @else {
-      PC Version
+      🞂 View Portfolio 🞀
     }
-  </button>
-  <button id="btn-mobile" type="button">
-    Mobile Version
   </button>
 </div>
 
