@@ -52,14 +52,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   isActivating = signal(false);
 
-  private readonly FORMULAS = [
-    'E = mc^2',
-    'e^{iπ}+1=0',
-    'a^2 + b^2 = c^2',
-    '∑_{n=1}^∞ 1/n^2 = π^2/6',
-    '∫_{-∞}^{∞} e^{-x^2} dx = √π',
-  ];
-  private formulaQueue: string[] = [];
+  private ANSWERS: number[] = [3, 5, 8, 13, 21];
+  private recentFormulas: string[] = [];
   private formulaInterval: any;
   private typingTimers = new Set<any>();
 
@@ -260,15 +254,61 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   // --- Floating Math Formulas ---
-  private nextFormula(): string {
-    if (this.formulaQueue.length === 0) {
-      this.formulaQueue = [...this.FORMULAS];
-      for (let i = this.formulaQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [this.formulaQueue[i], this.formulaQueue[j]] = [this.formulaQueue[j], this.formulaQueue[i]];
-      }
+  private nextAnswer(): number {
+    if (this.ANSWERS.length === 0) {
+      this.ANSWERS = Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 1);
     }
-    return this.formulaQueue.pop()!;
+    return this.ANSWERS.pop()!;
+  }
+
+  private generateFormula(answer?: number): string {
+    const target = answer ?? this.nextAnswer();
+    const ops = ['+', '-', '*', '/'];
+    let op = ops[Math.floor(Math.random() * ops.length)];
+    let a: number;
+    let b: number;
+
+    switch (op) {
+      case '+':
+        a = Math.floor(Math.random() * target);
+        b = target - a;
+        break;
+      case '-':
+        a = Math.floor(Math.random() * 10) + target;
+        b = a - target;
+        break;
+      case '*':
+        const factors: number[] = [];
+        for (let i = 1; i <= 10; i++) if (target % i === 0) factors.push(i);
+        if (factors.length === 0) {
+          op = '+';
+          a = Math.floor(Math.random() * target);
+          b = target - a;
+        } else {
+          a = factors[Math.floor(Math.random() * factors.length)];
+          b = target / a;
+        }
+        break;
+      case '/':
+        b = Math.floor(Math.random() * 9) + 1;
+        a = target * b;
+        break;
+    }
+
+    return `${a} ${op} ${b}`;
+  }
+
+  private nextFormula(): string {
+    let formula: string;
+    let attempts = 0;
+    do {
+      formula = this.generateFormula();
+      attempts++;
+    } while (this.recentFormulas.includes(formula) && attempts < 5);
+
+    this.recentFormulas.push(formula);
+    if (this.recentFormulas.length > 10) this.recentFormulas.shift();
+    return formula;
   }
 
   private typeFormula(el: HTMLElement, text: string, speed = 50): Promise<void> {
