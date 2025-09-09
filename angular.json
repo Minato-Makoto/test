@@ -19,7 +19,9 @@
             "browser": "index.tsx",
             "tsConfig": "tsconfig.json",
             "assets": [
-              "404.html"
+              "404.html",
+              "robots.txt",
+              "sitemap.xml"
             ]
           },
           "configurations": {
