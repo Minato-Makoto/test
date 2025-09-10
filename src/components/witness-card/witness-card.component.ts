@@ -35,25 +35,6 @@ export class WitnessCardComponent {
     this.renderer2.setStyle(bodyEl, 'overflow', 'visible');
     cardEl.innerHTML = `<h4>𝐖𝐈𝐓𝐍𝐄𝐒𝐒 ⇌ 𝐒𝐄𝐑𝐕𝐀𝐍𝐓</h4><hr/>`;
     cardEl.appendChild(bodyEl);
-    bodyEl.innerHTML = summary;
-
-    const measureContainer = this.renderer2.createElement('div');
-    this.renderer2.setStyle(measureContainer, 'position', 'absolute');
-    this.renderer2.setStyle(measureContainer, 'top', '-9999px');
-    this.renderer2.setStyle(measureContainer, 'left', '-9999px');
-    this.renderer2.setStyle(measureContainer, 'pointer-events', 'none');
-    this.renderer2.appendChild(measureContainer, cardEl);
-
-    const parentEl = document.body;
-    this.renderer2.appendChild(parentEl, measureContainer);
-
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
-    const height = cardEl.scrollHeight;
-    this.renderer2.setStyle(cardEl, 'height', `${height}px`);
-
-    this.renderer2.removeChild(parentEl, measureContainer);
-    bodyEl.innerHTML = '';
 
     threeState.controls.update();
     threeState.camera.updateMatrixWorld(true);
@@ -90,6 +71,7 @@ export class WitnessCardComponent {
     witnessCard.scale.set(targetScale.x, 0, targetScale.z);
 
     threeState.root.add(witnessCard);
+    this.renderer2.setStyle(cardEl, 'height', 'auto');
 
     tweenVec3(witnessCard.scale, targetScale, 350);
 
