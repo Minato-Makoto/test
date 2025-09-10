@@ -8,10 +8,11 @@ import {
   inject,
   ChangeDetectionStrategy,
   signal,
-  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
+import { BackgroundService } from './background.service';
+import { WitnessCardComponent } from './components/witness-card/witness-card.component';
 
 // Make THREE available in the component context, as it's loaded from a script tag.
 declare const THREE: any;
@@ -29,17 +30,6 @@ interface CardData {
   };
 }
 
-// Interface for the background formula effect
-interface Formula {
-  id: number;
-  fullText: string;
-  typedText: string;
-  top: string;
-  left: string;
-  isVisible: WritableSignal<boolean>;
-  isFadingOut: WritableSignal<boolean>;
-}
-
 @Component({
   selector: 'app-root',
   imports: [CommonModule],
@@ -50,6 +40,8 @@ interface Formula {
 export class AppComponent implements AfterViewInit, OnDestroy {
   private renderer2 = inject(Renderer2);
   private guideService = inject(GuideService);
+  private backgroundService = inject(BackgroundService);
+  private witnessCard = new WitnessCardComponent(this.renderer2, this.guideService);
 
   // View Children for DOM elements
   veiledContainer = viewChild<ElementRef<HTMLDivElement>>('veiledContainer');
@@ -61,24 +53,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   fpsEl = viewChild<ElementRef<HTMLDivElement>>('fps');
 
   isActivating = signal(false);
-
-  // --- Background Animation Properties ---
-  backgroundFormulas = signal<Formula[]>([]);
-  private formulaIdCounter = 0;
-  private readonly GRID_ROWS = 20;
-  private readonly GRID_COLS = 30;
-  private occupiedCells = new Set<string>();
-  private backgroundInterval: any;
-  private readonly FADE_DURATION = 1500; // ms, must match CSS transition
-
-  private readonly FORMULA_EXAMPLES = [
-    'E = mc²', '∇·E = ρ/ε₀', '∇·B = 0', '∇×E = -∂B/∂t', '∇×B = μ₀(J+ε₀∂E/∂t)',
-    '∫B·ds = μ₀I', 'Φ_B = ∫B·dA', 'F = q(E + v×B)', 'U = -p·E', 'C = Q/V',
-    'R = V/I', 'P = IV', 'L = Φ_B/I', '∮E·dl = -dΦ_B/dt', 'x(t) = Acos(ωt+φ)',
-    'λ = h/p', 'ΔxΔp ≥ ħ/2', 'HΨ = EΨ', 'PV = nRT', 'dS ≥ 0',
-    'F = G(m₁m₂/r²)', 'a² + b² = c²', 'sin(α±β) = sinαcosβ±cosαsinβ',
-    'e^(iπ) + 1 = 0', '1+1=2'
-  ];
+  backgroundFormulas = this.backgroundService.backgroundFormulas;
 
   private readonly CARD_DATA: CardData[] = [
     {
@@ -262,7 +237,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.boot();
-    this.startBackgroundAnimation();
+    this.backgroundService.start();
   }
 
   ngOnDestroy(): void {
@@ -270,79 +245,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (this.threeState._ro) this.threeState._ro.disconnect();
     if (this.threeState._raf) cancelAnimationFrame(this.threeState._raf);
     this._listeners.forEach(unlisten => unlisten());
-    clearInterval(this.backgroundInterval);
-  }
-
-  // --- Background Animation Logic ---
-  private startBackgroundAnimation(): void {
-    this.backgroundInterval = setInterval(() => {
-      if (this.backgroundFormulas().length < 50) {
-        this.addAndAnimateNewFormula();
-      }
-    }, 200);
-  }
-
-  private findAvailableCell(): { row: number; col: number } | null {
-    const deadZone = {
-      rowStart: 5, rowEnd: 15,
-      colStart: 8, colEnd: 22,
-    };
-
-    const availableCells: { row: number; col: number }[] = [];
-    for (let r = 0; r < this.GRID_ROWS; r++) {
-      for (let c = 0; c < this.GRID_COLS; c++) {
-        const isOccupied = this.occupiedCells.has(`${r}:${c}`);
-        const isInDeadZone =
-          r >= deadZone.rowStart &&
-          r <= deadZone.rowEnd &&
-          c >= deadZone.colStart &&
-          c <= deadZone.colEnd;
-        if (!isOccupied && !isInDeadZone) {
-          availableCells.push({ row: r, col: c });
-        }
-      }
-    }
-
-    if (availableCells.length === 0) return null;
-    return availableCells[Math.floor(Math.random() * availableCells.length)];
-  }
-
-  private async addAndAnimateNewFormula(): Promise<void> {
-    const cell = this.findAvailableCell();
-    if (!cell) return;
-
-    const cellKey = `${cell.row}:${cell.col}`;
-    this.occupiedCells.add(cellKey);
-
-    const newFormula: Formula = {
-      id: this.formulaIdCounter++,
-      fullText:
-        this.FORMULA_EXAMPLES[Math.floor(Math.random() * this.FORMULA_EXAMPLES.length)],
-      typedText: '',
-      top: `${(cell.row / this.GRID_ROWS) * 100}%`,
-      left: `${(cell.col / this.GRID_COLS) * 100}%`,
-      isVisible: signal(false),
-      isFadingOut: signal(false),
-    };
-
-    this.backgroundFormulas.update((formulas) => [...formulas, newFormula]);
-
-    requestAnimationFrame(() => newFormula.isVisible.set(true));
-
-    const typingSpeed = 50 + Math.random() * 50;
-    for (let i = 0; i < newFormula.fullText.length; i++) {
-      newFormula.typedText += newFormula.fullText[i];
-      await new Promise((res) => setTimeout(res, typingSpeed));
-    }
-
-    newFormula.isFadingOut.set(true);
-
-    setTimeout(() => {
-      this.backgroundFormulas.update((formulas) =>
-        formulas.filter((f) => f.id !== newFormula.id)
-      );
-      this.occupiedCells.delete(cellKey);
-    }, this.FADE_DURATION);
+    this.backgroundService.stop();
   }
 
   // --- Boot Logic ---
@@ -606,13 +509,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       return el;
   }
 
-  private createWitnessCardEl(): HTMLElement {
-    const el = this.renderer2.createElement('div');
-    this.renderer2.addClass(el, 'card3d');
-    this.renderer2.addClass(el, 'witness-card');
-    return el;
-  }
-
   private getVideoCardStyle(): any {
     return { width: '1280px', padding: '32px 16px' };
   }
@@ -775,7 +671,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     if (this.threeState.focused === o) {
       // Clicked the same card, so hide witness and reset view
-      this.hideWitnessCard();
+      this.witnessCard.hide(this.threeState);
       this.threeState.focused = null;
       const defaultTarget = new THREE.Vector3(0, 0, 0);
       const defaultCamPos = new THREE.Vector3(0, 0, 1200);
@@ -784,7 +680,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.hideWitnessCard(); // Hide previous card if any
+    this.witnessCard.hide(this.threeState); // Hide previous card if any
     this.threeState.focused = o;
 
     const target = o.position.clone();
@@ -796,117 +692,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     
     // Wait for the camera animation to complete.
     await new Promise(resolve => setTimeout(resolve, animationDuration));
-    
+
     if (this.threeState.focused === o) {
       requestAnimationFrame(() => {
         if (this.threeState.focused === o) { // Final check
-          this.showWitnessCard(o);
+          this.witnessCard.show(o, this.threeState, this.typewriter.bind(this), this.tweenVec3.bind(this), this.spawnKaomojiAt.bind(this));
         }
       });
     }
-  }
-
-  private async showWitnessCard(targetObject: any): Promise<void> {
-    const cardData = targetObject.cardData;
-    const summary = await this.guideService.getGuidance(cardData.id);
-  
-    if (this.threeState.focused !== targetObject) {
-      this.hideWitnessCard();
-      return;
-    }
-  
-    // --- CREATE CARD ELEMENT ---
-    const cardEl = this.createWitnessCardEl();
-    const bodyEl = this.renderer2.createElement('div');
-    this.renderer2.addClass(bodyEl, 'body');
-    cardEl.innerHTML = `<h4>𝐖𝐈𝐓𝐍𝐄𝐒𝐒 ⇌ 𝐒𝐄𝐑𝐕𝐀𝐍𝐓</h4><hr/>`;
-    cardEl.appendChild(bodyEl);
-    bodyEl.innerHTML = summary; // Populate with final content for measurement
-
-    // --- "HARD RENDER" LOGIC ---
-    const measureContainer = this.renderer2.createElement('div');
-    this.renderer2.setStyle(measureContainer, 'position', 'absolute');
-    this.renderer2.setStyle(measureContainer, 'top', '-9999px');
-    this.renderer2.setStyle(measureContainer, 'left', '-9999px');
-    this.renderer2.setStyle(measureContainer, 'pointer-events', 'none');
-    this.renderer2.appendChild(measureContainer, cardEl);
-
-    const parentEl = this.appWrap()?.nativeElement ?? document.body;
-    this.renderer2.appendChild(parentEl, measureContainer);
-
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
-    const height = cardEl.scrollHeight;
-    
-    this.renderer2.setStyle(cardEl, 'height', `${height}px`);
-
-    this.renderer2.removeChild(parentEl, measureContainer);
-    
-    bodyEl.innerHTML = '';
-  
-    // --- POSITIONING LOGIC ---
-    this.threeState.controls.update();
-    this.threeState.camera.updateMatrixWorld(true);
-    targetObject.updateMatrixWorld(true);
-  
-    const cameraRight = new THREE.Vector3();
-    cameraRight.setFromMatrixColumn(this.threeState.camera.matrixWorld, 0);
-    cameraRight.y = 0;
-    cameraRight.normalize();
-  
-    const targetWorldPos = new THREE.Vector3();
-    targetObject.getWorldPosition(targetWorldPos);
-  
-    const cardCssWidth = targetObject.element.offsetWidth;
-    const witnessCardCssWidth = 680; 
-    const cardWidth = cardCssWidth * targetObject.scale.x;
-    const witnessCardWidth = witnessCardCssWidth * targetObject.scale.x * 0.9;
-    const gap = 20;
-    const offsetDistance = (cardWidth / 2) + (witnessCardWidth / 2) + gap;
-  
-    const offset = cameraRight.multiplyScalar(offsetDistance);
-    const finalWorldPos = targetWorldPos.clone().add(offset);
-  
-    this.threeState.root.updateMatrixWorld(true);
-    const finalLocalPos = this.threeState.root.worldToLocal(finalWorldPos.clone());
-  
-    // --- ANIMATE WITNESS CARD ---
-    const witnessCard = new THREE.CSS3DObject(cardEl);
-    this.threeState.witnessCard = witnessCard;
-  
-    witnessCard.position.copy(finalLocalPos);
-    witnessCard.rotation.copy(this.threeState.focused.rotation);
-    
-    const targetScale = targetObject.scale.clone().multiplyScalar(0.9);
-    witnessCard.scale.set(targetScale.x, 0, targetScale.z); 
-    
-    this.threeState.root.add(witnessCard);
-
-    this.tweenVec3(witnessCard.scale, targetScale, 350);
-  
-    requestAnimationFrame(() => {
-      this.renderer2.addClass(cardEl, 'visible');
-    });
-  
-    setTimeout(async () => {
-      if (this.threeState.witnessCard !== witnessCard) return;
-      await this.typewriter(bodyEl, summary, 20);
-
-      // After typing is complete, dim the glow
-      if (this.threeState.witnessCard === witnessCard) {
-          this.renderer2.addClass(cardEl, 'dimming');
-      }
-    }, 200);
-  
-    this.spawnKaomojiAt(witnessCard);
-  }
-
-  private hideWitnessCard(): void {
-    const card = this.threeState.witnessCard;
-    if (card?.parent) {
-      card.parent.remove(card);
-    }
-    this.threeState.witnessCard = null;
   }
 
   private spawnKaomojiAt(sourceObject: any): void {
