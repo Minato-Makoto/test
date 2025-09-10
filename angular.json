@@ -22,7 +22,8 @@
               "404.html",
               "robots.txt",
               "sitemap.xml",
-              "src/assets"
+              "src/assets",
+              "styles.css"
             ]
           },
           "configurations": {
@@ -51,5 +52,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
