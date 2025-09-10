@@ -31,6 +31,8 @@ export class WitnessCardComponent {
     const cardEl = this.createWitnessCardEl();
     const bodyEl = this.renderer2.createElement('div');
     this.renderer2.addClass(bodyEl, 'body');
+    this.renderer2.setStyle(bodyEl, 'maxHeight', 'none');
+    this.renderer2.setStyle(bodyEl, 'overflow', 'visible');
     cardEl.innerHTML = `<h4>𝐖𝐈𝐓𝐍𝐄𝐒𝐒 ⇌ 𝐒𝐄𝐑𝐕𝐀𝐍𝐓</h4><hr/>`;
     cardEl.appendChild(bodyEl);
     bodyEl.innerHTML = summary;
