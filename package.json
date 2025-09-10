@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "ng serve",
-    "build": "ng build",
+    "build": "npm run tailwind && ng build",
+    "tailwind": "tailwindcss -i src/styles.css -o styles.css --minify",
     "preview": "ng serve --configuration=production",
     "test": "vitest"
   },
@@ -19,7 +20,7 @@
     "@angular/forms": "^20.1.6-0",
     "@angular/platform-browser": "^20.1.0",
     "rxjs": "^7.8.2",
-    "tailwindcss": "latest"
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^1.20.2",
