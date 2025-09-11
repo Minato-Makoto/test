@@ -61,9 +61,31 @@ Hiệu ứng Kaomoji xuất hiện khi chọn card.
 - Tùy biến gương mặt Kaomoji qua cấu trúc `KAOMOJI_PARTS` (mắt, miệng, ký tự trang trí).
 - Phạm vi emoji hiệu ứng được lấy ngẫu nhiên từ `EMOJI_RANGES`; sửa các cặp mã Unicode để đổi bộ emoji.
 
+### Particles (`src/app.component.ts`)
+Hiệu ứng hạt bay lơ lửng trong nền được tạo ngẫu nhiên.
+
+- `particlesCnt`: số lượng hạt. Giảm hoặc tăng để đổi mật độ.
+- `baseColor` và `colorArray`: chỉnh màu mặc định của hạt.
+- `pointsMaterial.size`: thay đổi kích thước từng hạt.
+- Nếu muốn đổi hình dạng hạt, sửa hàm `createCircleTexture`.
+
+### Màu sắc & font chữ (`index.html`, `tailwind.config.js`)
+Toàn bộ bảng màu và font cơ bản được đặt trong `index.html`.
+
+```html
+:root { --bg:#060606; --card:#111826; --ink:#e6edf3; /* ... */ }
+```
+
+- Chỉnh các biến `--bg`, `--card`, `--ink`, v.v. để đổi màu nền và màu chữ.
+- Liên kết Google Fonts ở đầu tệp cho phép đổi kiểu chữ. Thay URL hoặc thuộc tính `font` trong `html,body` để chỉnh font và cỡ chữ gốc.
+- Khi cần thêm màu hoặc font với Tailwind, mở rộng `theme.extend` trong `tailwind.config.js`.
+
 ---
 
 ## Các cập nhật trong tương lai
 
-*(Nơi để ghi chú lại những thay đổi hoặc hướng dẫn mới sau này)*
+- Mobile Version tối ưu cho màn hình nhỏ.
+- Blog page để đăng tải bài viết.
+- AI tool page cung cấp tiện ích hỗ trợ sáng tạo.
+- Trang tương tác 3D với AI.
 
