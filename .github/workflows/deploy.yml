@@ -33,7 +33,7 @@ jobs:
 
       # Bước 4: "Xây dựng" trang web. Lệnh này sẽ tạo ra thư mục "dist"
       - name: Build Angular Project
-        run: npm run build -- --configuration production --base-href /
+        run: npm run build -- --configuration production --base-href /test/
 
       # Bước 5: Cấu hình GitHub Pages
       - name: Setup Pages
