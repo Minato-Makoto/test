@@ -23,6 +23,7 @@
               "mobile.html",
               "robots.txt",
               "sitemap.xml",
+              ".nojekyll",
               "src/assets",
               "styles.css"
             ]
