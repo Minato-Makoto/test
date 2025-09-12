@@ -149,7 +149,7 @@
   // Data cloned from Angular CARD_DATA (positions/scales match)
   const VIDEO_STYLE = { width: '1280px', padding: '32px 16px' };
   const CARD_DATA = [
-    { id:'personal-info-card', title:'Thông tin cá nhân', meta:'Personal Information', body:`<ul><li>Name: Lương Bảo Huy</li><li>Titles: Video Producer • Graphic Designer • Photographer</li><li>Role: Generalist</li><li>AI Title Generation: Director of Artificial Intelligence</li></ul>`, opts:{ noexpand:true, style:{ width:'960px' } }, layout:{ scale:0.6, position:{ x:0,y:0,z:0 } } },
+    { id:'personal-info-card', title:'Thông tin cá nhân', meta:'Personal Information', body:`<ul><li>Name: Lương Bảo Huy</li><li>Titles: Video Producer • Graphic Designer • Photographer</li><li>Role: Generalist</li><li>AI Title Generation: Director of Artificial Intelligence</li></ul>`, opts:{ noexpand:true, style:{ width:'1080px' } }, layout:{ scale:0.6, position:{ x:0,y:0,z:0 } } },
     { id:'harmony-card', title:'Producer - Project Manager', meta:'Harmony 2025 - Better With You', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1X-_4rjqvc4X_ZVYo5BYFDoEBzp_DtkwZ/preview" width="1280" height="720" title="Harmony 2025 - Better With You" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:0,y:240,z:-666 } } },
     { id:'contact-card', title:'Contact', meta:'Thông tin liên lạc', body:`<ul><li><strong>Email</strong>: <a href="mailto:minatokiva@gmail.com">minatokiva@gmail.com</a></li><li><strong>Zalo/ WhatsApp</strong>: <a href="tel:+84704555527">+84 704 5555 27</a></li></ul>`, layout:{ scale:0.25, position:{ x:0,y:-240,z:-150 } } },
     { id:'microlife-bts-card', title:'Post-production supervisor', meta:'Microlife Talkshow 2021 | Behind The Scene', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/_V3pAcQBhPo" title="Microlife Talkshow 2021 | Behind the scene" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:240,y:0,z:0 } } },
@@ -190,10 +190,10 @@
       container.innerHTML='';
       init3DScene();
     },{once:true});
-    const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='manipulation'; container.appendChild(css.domElement);
+    const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='auto'; container.appendChild(css.domElement);
     scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
     const root=new THREE.Group(); scene.add(root);
-    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.05; controls.minDistance=260; controls.maxDistance=2200; controls.target.set(0,0,0);
+    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.05; controls.minDistance=0; controls.maxDistance=2200; controls.target.set(0,0,0);
 
     // background stars (reduced on iOS)
     const starCount = 1200; const pGeo=new THREE.BufferGeometry(); const pos=new Float32Array(starCount*3);
@@ -202,7 +202,7 @@
     // Use round sprite texture for particles
     const particleTexture = (function(){
       const c=document.createElement('canvas'); c.width=c.height=64; const ctx=c.getContext('2d'); const r=32; const g=ctx.createRadialGradient(r,r,0,r,r,r); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,1)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); t.needsUpdate=true; return t; })();
-    const pMat=new THREE.PointsMaterial({ size: 1.5, sizeAttenuation:true, map: particleTexture, transparent:true, opacity:.6, depthWrite:false });
+    const pMat=new THREE.PointsMaterial({ size: 2, sizeAttenuation:true, map: particleTexture, transparent:true, opacity:.6, depthWrite:false });
     const stars=new THREE.Points(pGeo,pMat); scene.add(stars);
 
     const onResize=()=>{ const w=container.clientWidth, h=container.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); applyDpr(); gl.setSize(w,h); css.setSize(w,h); };
