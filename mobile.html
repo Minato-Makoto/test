@@ -172,6 +172,7 @@
     gl.domElement.addEventListener('webglcontextrestored',()=>{
       const msg=container.querySelector('.ctx-lost'); if(msg) msg.remove();
       container.innerHTML='';
+      if(window.__tsInterval){ clearInterval(window.__tsInterval); }
       init3DScene();
     },{once:true});
     const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='manipulation'; container.appendChild(css.domElement);
@@ -319,7 +320,7 @@
     const state={ ctrl:new AbortController(), dprTarget: 1, container, wrap, radius:560, layout:'sphere', autoRotate:true, focused:null, textCache:[], mx:0, my:0, tweens:[], _raf:null, _ro:null };
     Object.assign(state, buildScene(state)); Object.assign(state, buildCards(state)); state.layouts = createLayouts(state); state.applyLayout=(name)=>{ state.layout=name; (state.layouts[name]||state.layouts.sphere).call(state.layouts); }; interactions(state); animateCameraZ(state, state.camera, 900, 1240, 900); state.applyLayout('sphere'); startLoop(state); }
 
-  function boot(){ init3DScene(); stamp(); try{ window.__tsInterval = setInterval(stamp, 1000); }catch{} }
+  function boot(){ if(window.__tsInterval){ clearInterval(window.__tsInterval); } init3DScene(); stamp(); try{ window.__tsInterval = setInterval(stamp, 1000); }catch{} }
   window.addEventListener('DOMContentLoaded', boot);
   </script>
 </body>
