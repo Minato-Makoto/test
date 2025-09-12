@@ -57,7 +57,8 @@
     .stage3d { position:relative; width:100%; height:100vh; min-height:580px; border-top:1px solid var(--border); overflow:hidden; --bgx:30%; --bgy:20%; background:radial-gradient(1200px 600px at var(--bgx) var(--bgy), var(--bg-grad1) 0%, var(--bg-grad2) 60%, var(--bg-grad3) 100%); touch-action:none; }
     @supports (height: 100svh) { .stage3d { height: 100svh; } }
     @supports (height: 100dvh) { .stage3d { height: 100dvh; } }
-    .stage3d canvas, .stage3d .css3d { position:absolute; inset:0; z-index:0; touch-action:none; }
+    .stage3d canvas { position:absolute; inset:0; z-index:0; touch-action:none; pointer-events:none; }
+    .stage3d .css3d { position:absolute; inset:0; z-index:0; touch-action:manipulation; }
     .hud { position:absolute; inset:0; pointer-events:none; z-index:10; }
     .hud .brand { position:absolute; top:12px; left:16px; font-family: ui-monospace, Menlo, monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
     /* bigtype removed for Mobile */
@@ -75,25 +76,25 @@
     .card3d h4 { margin:0 0 12px 0; font-size:66px; text-transform:uppercase; letter-spacing:1px; font-weight:900; }
     .card3d .meta { color:var(--muted); font-size:42px; margin-bottom:12px; font-weight:600; }
     .card3d .body { max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:32px; line-height:1.7; }
+    .card3d.open .body { max-height:640px; }
     .card3d.noexpand .body { max-height:none !important; overflow:visible !important; transition:none !important; }
     .card3d:hover { transform:translateZ(12px) scale(1.03); border-color:var(--accent); box-shadow:0 24px 60px rgba(0,0,0,.55); }
     .card3d:hover .body { max-height:440px; }
     .mono { font-family: ui-monospace, Menlo, monospace; }
     .card3d iframe { display:block; width:100% !important; height:auto !important; aspect-ratio:16/9; border-radius:12px; border:none; box-shadow:0 4px 24px rgba(0,0,0,0.18); }
+    /* Thumbnail-only video (no iframe)
+       Center play overlay perfectly */
+    .video-thumb { position:relative; display:block; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#111; text-decoration:none; }
+    .video-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .video-thumb .play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(transparent, rgba(0,0,0,.35)); color:var(--ink); font-weight:900; font-size:42px; letter-spacing:1px; text-shadow:0 3px 12px rgba(0,0,0,.6); }
+    .video-thumb .play::before { content:""; width:74px; height:74px; border-radius:50%; background:rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.8); position:absolute; }
 
     .toast { position:fixed; right:16px; bottom:16px; background:var(--card-bg); border:1px solid var(--border); padding:10px 14px; border-radius:12px; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
     .toast.show { opacity:1; transform:translateY(0); }
   </style>
 </head>
 <body>
-  <div id="veiled-container">
-    <div class="title-veiled" id="title-veiled">Portfolio Mobile</div>
-    <div class="badge-veiled">VERIFIED ∴ SEALED</div>
-    <span id="kao-veiled" class="kao">( ˘ ˘)ノ✧</span>
-    <button id="btn-activate" type="button">[ ENTER MOBILE ]</button>
-  </div>
-
-  <div class="wrap hidden">
+  <div class="wrap visible">
     <div id="stage3d" class="stage3d">
       <div class="hud">
         <div class="brand">PORTFOLIO • MOBILE</div>
@@ -117,6 +118,22 @@
   function easeInOutCubic(t){ return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2 }
   function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1500); }
   function esc(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+  function extractIframeSrc(html){ const m = String(html||'').match(/<iframe[^>]+src=\"([^\"]+)\"/i); return m ? m[1] : null; }
+  function videoLinkAndThumb(src){
+    try{
+      let m = src.match(/youtube\.com\/embed\/([^"\?\/&]+)/i);
+      if (m) {
+        const id = m[1];
+        return { url: `https://www.youtube.com/watch?v=${id}`, thumb: `https://i.ytimg.com/vi/${id}/hqdefault.jpg` };
+      }
+      m = src.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/i);
+      if (m) {
+        const id = m[1];
+        return { url: `https://drive.google.com/file/d/${id}/view`, thumb: `https://drive.google.com/thumbnail?id=${id}&sz=w1280` };
+      }
+    } catch {}
+    return { url: src, thumb: null };
+  }
 
   // Data cloned from Angular CARD_DATA (positions/scales match)
   const VIDEO_STYLE = { width: '1280px', padding: '32px 16px' };
@@ -150,15 +167,20 @@
       const clamp = state.isIOS ? 1 : 2; gl.setPixelRatio(Math.min(baseDpr*state.dprTarget, clamp));
     };
     applyDpr(); gl.setSize(container.clientWidth, container.clientHeight); container.appendChild(gl.domElement);
-    const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='none'; container.appendChild(css.domElement);
+    const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='manipulation'; container.appendChild(css.domElement);
     scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
     const root=new THREE.Group(); scene.add(root);
-    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.08; controls.minDistance=260; controls.maxDistance=2200; controls.target.set(0,0,0);
+    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.05; controls.minDistance=260; controls.maxDistance=2200; controls.target.set(0,0,0);
 
     // background stars (reduced on iOS)
     const starCount = state.isIOS ? 1200 : 2600; const pGeo=new THREE.BufferGeometry(); const pos=new Float32Array(starCount*3);
     for(let i=0;i<starCount;i++){ const r=260+Math.random()*1000; const a=Math.random()*Math.PI*2; const u=Math.random()*2-1; const phi=Math.acos(u); pos[i*3]=r*Math.cos(a)*Math.sin(phi); pos[i*3+1]=r*Math.sin(a)*Math.sin(phi); pos[i*3+2]=r*Math.cos(phi); }
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3)); const pMat=new THREE.PointsMaterial({size:2,sizeAttenuation:true,transparent:true,opacity:.55}); const stars=new THREE.Points(pGeo,pMat); scene.add(stars);
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+    // Use round sprite texture for particles
+    const particleTexture = (function(){
+      const c=document.createElement('canvas'); c.width=c.height=64; const ctx=c.getContext('2d'); const r=32; const g=ctx.createRadialGradient(r,r,0,r,r,r); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,1)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); t.needsUpdate=true; return t; })();
+    const pMat=new THREE.PointsMaterial({ size: 1, sizeAttenuation:true, map: particleTexture, transparent:true, opacity:.6, depthWrite:false });
+    const stars=new THREE.Points(pGeo,pMat); scene.add(stars);
 
     const onResize=()=>{ const w=container.clientWidth, h=container.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); applyDpr(); gl.setSize(w,h); css.setSize(w,h); };
     window.addEventListener('resize', onResize, { signal: state.ctrl.signal }); const ro=new ResizeObserver(onResize); ro.observe(container); onResize();
@@ -168,7 +190,7 @@
   function buildCards(state){
     const objects=[]; const textCache=[];
     const elFor=(title,meta,body,opts={})=>{ const el=document.createElement('div'); el.className='card3d'; if(opts.noexpand){ el.classList.add('noexpand'); } el.innerHTML=`<h4>${esc(title)}</h4>${meta?`<div class="meta">${esc(meta)}</div>`:''}<div class="body">${body||''}</div>`; if(opts.style){ Object.keys(opts.style).forEach(k=> el.style[k]=opts.style[k]); } return el; };
-    for(const c of CARD_DATA){ const el=elFor(c.title,c.meta,c.body,c.opts||{}); el.id=c.id; const obj=new THREE.CSS3DObject(el); obj.scale.set(c.layout.scale,c.layout.scale,c.layout.scale); obj.cardData=c; state.root.add(obj); objects.push(obj); textCache.push(el.textContent.toLowerCase()); }
+    for(const c of CARD_DATA){ let bodyHTML=c.body; const src=extractIframeSrc(bodyHTML); if(src){ const v=videoLinkAndThumb(src); const img = v.thumb ? `<img loading=\"lazy\" src=\"${v.thumb}\" alt=\"${esc(c.title)} thumbnail\">` : ''; bodyHTML = `<a class=\"video-thumb\" href=\"${v.url}\" target=\"_blank\" rel=\"noopener\" onclick=\"event.stopPropagation()\">${img}<div class=\"play\">▶</div></a>`; } const el=elFor(c.title,c.meta,bodyHTML,c.opts||{}); el.id=c.id; const obj=new THREE.CSS3DObject(el); obj.scale.set(c.layout.scale,c.layout.scale,c.layout.scale); obj.cardData=c; state.root.add(obj); objects.push(obj); textCache.push(el.textContent.toLowerCase()); }
     return { objects, textCache };
   }
 
@@ -188,7 +210,30 @@
   }
 
   function interactions(state){ const {ctrl, css, container}=state; let mQueued=false, mX=0,mY=0; css.domElement.addEventListener('pointermove', (e)=>{ mX=e.clientX; mY=e.clientY; if(mQueued) return; mQueued=true; requestAnimationFrame(()=>{ mQueued=false; const r=css.domElement.getBoundingClientRect(); const x=(mX-r.left)/r.width*2-1; const y=(mY-r.top)/r.height*2-1; state.mx=x; state.my=y; container.style.setProperty('--bgx', `${50+state.mx*20}%`); container.style.setProperty('--bgy', `${40+state.my*15}%`); }); }, { passive:true, signal: ctrl.signal });
-    state.objects.forEach(o=>{ o.element.addEventListener('mouseenter', ()=>{ o.element.style.borderColor = 'var(--accent)'; }, { signal: ctrl.signal }); o.element.addEventListener('mouseleave', ()=>{ o.element.style.borderColor = 'var(--border)'; }, { signal: ctrl.signal }); o.element.addEventListener('click', ()=> focusObject(state,o), { signal: ctrl.signal }); }); }
+    state.objects.forEach(o=>{ 
+      o.element.addEventListener('mouseenter', ()=>{ o.element.style.borderColor = 'var(--accent)'; }, { signal: ctrl.signal }); 
+      o.element.addEventListener('mouseleave', ()=>{ o.element.style.borderColor = 'var(--border)'; }, { signal: ctrl.signal }); 
+      const isExpandable = !o.element.classList.contains('noexpand');
+      const handleToggle = (e)=>{ try{ if (e && e.target && e.target.closest && e.target.closest('a')) return; }catch{} if(isExpandable){ o.element.classList.toggle('open'); } };
+      o.element.addEventListener('click', handleToggle, { signal: ctrl.signal });
+      o.element.addEventListener('pointerup', handleToggle, { signal: ctrl.signal });
+      o.element.addEventListener('touchend', handleToggle, { signal: ctrl.signal });
+
+      // Make anchors inside cards reliably clickable on mobile (prevent OrbitControls from swallowing the gesture)
+      const anchors = o.element.querySelectorAll('a');
+      anchors.forEach((a)=>{
+        const stop = (e)=>{ try{ e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); }catch{} };
+        a.addEventListener('pointerdown', stop, { passive:false, signal: ctrl.signal });
+        a.addEventListener('touchstart', stop, { passive:false, signal: ctrl.signal });
+        a.addEventListener('click', (e)=>{ 
+          stop(e);
+          try{ e.preventDefault(); }catch{}
+          const href = a.getAttribute('href');
+          if(href){ try{ window.open(href, '_blank', 'noopener'); }catch{} }
+        }, { passive:false, signal: ctrl.signal });
+      });
+    }); 
+  }
 
   function tweenVec3(state, vec, to, dur=700){ const s=vec.clone?vec.clone():new THREE.Vector3(vec.x,vec.y,vec.z); const t0=performance.now(); state.tweens.push(now=>{ const t=Math.min(1,(now-t0)/dur); const k=easeInOutCubic(t); vec.set(s.x+(to.x-s.x)*k, s.y+(to.y-s.y)*k, s.z+(to.z-s.z)*k); return t<1; }); }
   function animateCameraZ(state, camera, fromZ, toZ, dur=800){ const start=fromZ, d=toZ-fromZ, t0=performance.now(); camera.position.z=start; state.tweens.push(now=>{ const t=Math.min(1,(now-t0)/dur); camera.position.z = start + d* easeInOutCubic(t); return t<1; }); }
@@ -210,6 +255,18 @@
       if (document.hidden) return;
       controls.update();
       tilt();
+      // Animate particles: gentle rotation + soft twinkle
+      if (state.stars) {
+        try {
+          state.stars.rotation.y += 0.00025;
+          state.stars.rotation.x += 0.00005;
+          const mat = state.stars.material;
+          if (mat && typeof mat.opacity === 'number') {
+            const t = performance.now() * 0.0006;
+            mat.opacity = 0.6 + 0.1 * Math.sin(t);
+          }
+        } catch {}
+      }
       // Face camera every frame (billboard like PC version)
       if (state.objects && camera) {
         const camPos = camera.position.clone();
@@ -242,21 +299,7 @@
     const state={ ctrl:new AbortController(), dprTarget: isIOS ? 1 : 2, container, wrap, radius:560, layout:'sphere', autoRotate:true, focused:null, textCache:[], mx:0, my:0, tweens:[], _raf:null, _ro:null, isIOS };
     Object.assign(state, buildScene(state)); Object.assign(state, buildCards(state)); state.layouts = createLayouts(state); state.applyLayout=(name)=>{ state.layout=name; (state.layouts[name]||state.layouts.sphere).call(state.layouts); }; interactions(state); animateCameraZ(state, state.camera, 900, 1240, 900); state.applyLayout('sphere'); startLoop(state); }
 
-  function boot(){
-    const veiled=document.getElementById('veiled-container');
-    const wrap=document.querySelector('.wrap');
-    const activate=()=>{
-      if(veiled){ veiled.style.display='none'; veiled.classList.add('hidden'); }
-      if(wrap){ wrap.classList.remove('hidden'); wrap.classList.add('visible'); }
-      init3DScene();
-      stamp();
-    };
-    // Auto-activate immediately (skip veiled/sync step)
-    activate();
-    // Keep button as fallback if present
-    const btn=document.getElementById('btn-activate');
-    if(btn) btn.addEventListener('click', activate);
-  }
+  function boot(){ init3DScene(); stamp(); }
   window.addEventListener('DOMContentLoaded', boot);
   </script>
 </body>
