@@ -266,6 +266,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             this.renderer2.listen(activateBtn, 'click', () => { this.activatePortfolio(); })
         );
     }
+
+    // Hook existing Mobile Version button to open the optimized mobile page
+    const mobileBtn = document.getElementById('btn-mobile') as HTMLButtonElement | null;
+    if (mobileBtn) {
+      this._listeners.push(
+        this.renderer2.listen(mobileBtn, 'click', () => { window.location.href = 'mobile.html'; })
+      );
+    }
   }
   
   private activatePortfolio(): void {

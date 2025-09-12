@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Mobile • 3D CSS (Optimized)</title>
+
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <style>
+    /* Unified palette (synced with main site) */
+    :root {
+      --bg:#060606;              /* base background from main */
+      /* Match PC Version glassy card tone */
+      --card: rgba(17, 17, 17, 0.75); /* content surface */
+      --card-bg: var(--card);    /* mobile cards follow main card */
+      --ink:#e6edf3;             /* primary text */
+      --muted:#9aa4b2;           /* secondary text */
+      --accent:#7dd3fc;          /* highlight */
+      --ok:#22c55e;              /* success */
+      --warn:#f59e0b;            /* warning */
+      --hot:#f43f5e;             /* danger */
+      --border:#1f2937;          /* base border */
+      --border-strong:#334155;   /* elevated border */
+      /* Background gradient stops (synced to --bg) */
+      --bg-grad1: var(--bg);
+      --bg-grad2: var(--bg);
+      --bg-grad3: var(--bg);
+    }
+    /* Prefer subtle gradient if color-mix is supported */
+    @supports (background: color-mix(in srgb, black, white)) {
+      :root {
+        --bg-grad1: color-mix(in srgb, var(--bg), white 3%);
+        --bg-grad2: var(--bg);
+        --bg-grad3: color-mix(in srgb, var(--bg), black 6%);
+      }
+    }
+    * { box-sizing:border-box; }
+    html,body { margin:0; padding:0; background:var(--bg); color:var(--ink); font:16px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; }
+    a { color:var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    #veiled-container { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:100vh; padding:24px; gap:14px; transition:opacity .5s ease-out; }
+    #veiled-container.hidden { opacity:0; pointer-events:none; }
+    .title-veiled { font-weight:800; font-size:28px; letter-spacing:.4px; }
+    .badge-veiled { background:linear-gradient(135deg,#22c55e33,#22c55e22); color:#a7f3d0; border:1px solid #14532d; padding:6px 10px; border-radius:999px; font-size:12px; display:inline-block; }
+    #btn-activate { background:var(--card-bg); border:1px solid var(--border); color:var(--ink); padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; letter-spacing:.5px; }
+    #btn-activate:hover { border-color:var(--border-strong); }
+    #kao-veiled.kao { font-size:28px; }
+
+    .wrap { max-width:100%; margin:0 auto; padding:0; position:relative; }
+    .wrap.hidden { display:none; opacity:0; }
+    .wrap.visible { display:block; opacity:1; transition:opacity .5s ease-in; }
+    .footer { margin:0; color:#94a3b8; font-size:12px; padding:10px 16px; position:absolute; bottom:0; left:0; }
+
+    .stage3d { position:relative; width:100%; height:100vh; min-height:580px; border-top:1px solid var(--border); overflow:hidden; --bgx:30%; --bgy:20%; background:radial-gradient(1200px 600px at var(--bgx) var(--bgy), var(--bg-grad1) 0%, var(--bg-grad2) 60%, var(--bg-grad3) 100%); touch-action:none; }
+    .stage3d canvas, .stage3d .css3d { position:absolute; inset:0; z-index:0; touch-action:none; }
+    .hud { position:absolute; inset:0; pointer-events:none; z-index:10; }
+    .hud .brand { position:absolute; top:12px; left:16px; font-family: ui-monospace, Menlo, monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    /* bigtype removed for Mobile */
+    .hud .fps { position:absolute; top:12px; right:16px; color:var(--muted); font-family: ui-monospace, Menlo, monospace; font-size:12px; }
+
+    .card3d { width:720px; /* lock card width; avoid viewport scaling */ background:var(--card-bg); border:2px solid var(--border); border-radius:12px; padding:64px 48px; color:var(--ink);
+      font-family: 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Noto Sans', 'Roboto', 'Segoe UI', 'Arial', 'Liberation Sans', 'Helvetica Neue', sans-serif;
+      font-size:42px; line-height:1.5; font-weight:700;
+      box-shadow:0 20px 40px rgba(0,0,0,.45); transform:translateZ(0); transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease; backdrop-filter: blur(4px); position:relative; overflow:hidden; }
+    .card3d::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.18; mix-blend-mode:soft-light; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="120" height="120" fill="white" filter="url(%23n)"/></svg>'); background-size:220px 220px; background-repeat:repeat; }
+    .card3d > * { position:relative; z-index:1; }
+    .card3d h4 { margin:0 0 12px 0; font-size:66px; text-transform:uppercase; letter-spacing:1px; font-weight:900; }
+    .card3d .meta { color:var(--muted); font-size:42px; margin-bottom:12px; font-weight:600; }
+    .card3d .body { max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:32px; line-height:1.7; }
+    .card3d.noexpand .body { max-height:none !important; overflow:visible !important; transition:none !important; }
+    .card3d:hover { transform:translateZ(12px) scale(1.03); border-color:var(--accent); box-shadow:0 24px 60px rgba(0,0,0,.55); }
+    .card3d:hover .body { max-height:440px; }
+    .mono { font-family: ui-monospace, Menlo, monospace; }
+    .card3d iframe { display:block; width:100% !important; height:auto !important; aspect-ratio:16/9; border-radius:12px; border:none; box-shadow:0 4px 24px rgba(0,0,0,0.18); }
+
+    .toast { position:fixed; right:16px; bottom:16px; background:var(--card-bg); border:1px solid var(--border); padding:10px 14px; border-radius:12px; opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body>
+  <div id="veiled-container">
+    <div class="title-veiled" id="title-veiled">Portfolio Mobile</div>
+    <div class="badge-veiled">VERIFIED ∴ SEALED</div>
+    <span id="kao-veiled" class="kao">( ˘ ˘)ノ✧</span>
+    <button id="btn-activate" type="button">[ ENTER MOBILE ]</button>
+  </div>
+
+  <div class="wrap hidden">
+    <div id="stage3d" class="stage3d">
+      <div class="hud">
+        <div class="brand">PORTFOLIO • MOBILE</div>
+        
+        <div id="fps" class="fps">fps: --</div>
+      </div>
+    </div>
+    <div class="footer">for Minato-sama · <span id="ts"></span></div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
+
+  <script>
+  // Util
+  function pad(n){return n.toString().padStart(2,'0')}
+  function stamp(){ const d=new Date(); const ts=`${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}Z`; const el=document.querySelector('#ts'); if (el) el.textContent=ts; }
+  function easeInOutCubic(t){ return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2 }
+  function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1500); }
+  function esc(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+  // Data cloned from Angular CARD_DATA (positions/scales match)
+  const VIDEO_STYLE = { width: '1280px', padding: '32px 16px' };
+  const CARD_DATA = [
+    { id:'personal-info-card', title:'Thông tin cá nhân', meta:'Personal Information', body:`<ul><li>Name: Lương Bảo Huy</li><li>Titles: Video Producer • Graphic Designer • Photographer</li><li>Role: Generalist</li><li>AI Title Generation: Director of Artificial Intelligence</li></ul>`, opts:{ noexpand:true, style:{ width:'960px' } }, layout:{ scale:0.6, position:{ x:0,y:0,z:0 } } },
+    { id:'harmony-card', title:'Producer - Project Manager', meta:'Harmony 2025 - Better With You', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1X-_4rjqvc4X_ZVYo5BYFDoEBzp_DtkwZ/preview" width="1280" height="720" title="Harmony 2025 - Better With You" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:0,y:240,z:-666 } } },
+    { id:'contact-card', title:'Contact', meta:'Thông tin liên lạc', body:`<ul><li><strong>Email</strong>: <a href="mailto:minatokiva@gmail.com">minatokiva@gmail.com</a></li><li><strong>Zalo/ WhatsApp</strong>: <a href="tel:+84704555527">+84 704 5555 27</a></li></ul>`, layout:{ scale:0.25, position:{ x:0,y:-240,z:-150 } } },
+    { id:'microlife-bts-card', title:'Post-production supervisor', meta:'Microlife Talkshow 2021 | Behind The Scene', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/_V3pAcQBhPo" title="Microlife Talkshow 2021 | Behind the scene" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:240,y:0,z:0 } } },
+    { id:'external-ids-card', title:'External IDs', meta:'Social Network', body:`<ul>${[{label:'LinkedIn',handle:'Lương Bảo Huy',url:'https://www.linkedin.com/in/b%E1%BA%A3o-huy-l%C6%B0%C6%A1ng-1653a41a3'},{label:'Instagram',handle:'@minatomakoto',url:'https://www.instagram.com/minatomakoto'},{label:'Facebook',handle:'Minato Makoto',url:'https://www.facebook.com/MinatoMakoto/'},{label:'YouTube',handle:'@minatomakoto',url:'https://www.youtube.com/@minatomakoto'},{label:'TikTok',handle:'@minatomakoto',url:'https://www.tiktok.com/@minatomakoto'}].map(e=>`<li>${esc(e.label)}: <a href="${e.url}" target="_blank" rel="noopener">${esc(e.handle)}</a></li>`).join('')}</ul>`, layout:{ scale:0.25, position:{ x:50,y:100,z:0 } } },
+    { id:'motor-fest-card', title:'Post-production supervisor', meta:'Motor Fest 2023', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1LHlJL_vV7l8I4_F-JIutWN8wlMhoGaEn/preview" width="1280" height="720" title="Motor Fest 2023" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:0,y:200,z:-600 } } },
+    { id:'digital-identity-card', title:'Digital Identity', meta:'Thông tin điện tử', body:`<ul><li><b>Latent ID</b>: 𝒁Σ̴𝑹Ø</li><li><b>GitHub</b>: <a href="https://github.com/Minato-Makoto" target="_blank" rel="noopener">Minato-Makoto</a></li></ul>`, layout:{ scale:0.25, position:{ x:-150,y:0,z:0 } } },
+    { id:'mv-le-card', title:'Post-Production Supervisor', meta:'MV LAc - Dr Roc', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1yeMXF7wVZBWE2W7VHUQvHY1k7gREsfjD/preview" width="1280" height="720" title="MV LAc - Dr Roc" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:0,y:-360,z:0 } } },
+    { id:'dong-co-lau-card', title:'Post-Production Supervisor', meta:"ĐỪNG CÓ LAU - HÀNH TRÌNH...", body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1cN1AkKCYtoxowWyVDofOIZlX4cZnrhGS/preview" width="1280" height="720" title="ĐỪNG CÓ LAU" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:-420,y:0,z:-240 } } },
+    { id:'doraemon-tvc-card', title:'Post-Production Supervisor', meta:'DORAEMON LIPICE SHEER COLOR', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/7w3royxjrtw?si=S8rAgrb9-OMhlpEs" title="YouTube video player" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, layout:{ scale:0.25, position:{ x:-240,y:0,z:0 } } },
+    { id:'ThaiLong-card', title:'Post-Production Supervisor', meta:'Thái Long Yến Tiệc', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1oFDR_ff0AHRXJuIFiQy8suxvZNKuA_Bg/preview" width="1280" height="720" title="Thái Long Yến Tiệc" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, manualLayout:true, layout:{ scale:0.25, position:{ x:360,y:450,z:-150 } } },
+    { id:'hithegioi-card', title:'Post-Production Supervisor', meta:'BLACKA - Hi Thế Giới | No No No (ft. ARTHUR)', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/wBWQsfxG4eE" title="BLACKA - Hi Thế Giới" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, manualLayout:true, layout:{ scale:0.25, position:{ x:1000,y:400,z:-600 } } },
+    { id:'daydream-card', title:'Producer - Project Manager', meta:'RECAP DAY DREAMS FINAL 2024!', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe src="https://drive.google.com/file/d/1PsYIUeHpntiBvQT1aYqrY8rd0KGJlU4B/preview" width="1280" height="720" title="RECAP DAY DREAMS FINAL 2024!" style="border-radius:12px;border:none;box-shadow:0 4px 24px rgba(0,0,0,0.18);"></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, manualLayout:true, layout:{ scale:0.25, position:{ x:-600,y:150,z:0 } } },
+    { id:'2ndchance-card', title:'BTS - Producer Assistant', meta:'The 2nd Chance - Hãy Thay Đổi Lối Sống...', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/5RVfxLfCHwg" title="The 2nd Chance" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, manualLayout:true, layout:{ scale:0.25, position:{ x:-1000,y:420,z:-240 } } },
+    { id:'PhongNguaDotQuy-card', title:'BTS - Producer Assistant', meta:'Bảo Vệ+ Gia Đình Phòng Ngừa Đột Quỵ', body:`<div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;min-height:320px;"><iframe width="1280" height="720" src="https://www.youtube.com/embed/PPNA0KnOrNg" title="Phòng Ngừa Đột Quỵ" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`, opts:{ noexpand:true, style: VIDEO_STYLE }, manualLayout:true, layout:{ scale:0.25, position:{ x:700,y:50,z:-300 } } }
+  ];
+
+  
+
+  function buildScene(state){
+    const { container } = state;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth/container.clientHeight, 0.1, 4000);
+    camera.position.set(0,0,1200);
+    const gl = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance', stencil:false });
+    const baseDpr = window.devicePixelRatio||1; const applyDpr=()=> gl.setPixelRatio(Math.min(baseDpr*state.dprTarget,2));
+    applyDpr(); gl.setSize(container.clientWidth, container.clientHeight); container.appendChild(gl.domElement);
+    const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='none'; container.appendChild(css.domElement);
+    scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
+    const root=new THREE.Group(); scene.add(root);
+    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.08; controls.minDistance=260; controls.maxDistance=2200; controls.target.set(0,0,0);
+
+    // background stars
+    const starCount=2600; const pGeo=new THREE.BufferGeometry(); const pos=new Float32Array(starCount*3);
+    for(let i=0;i<starCount;i++){ const r=260+Math.random()*1000; const a=Math.random()*Math.PI*2; const u=Math.random()*2-1; const phi=Math.acos(u); pos[i*3]=r*Math.cos(a)*Math.sin(phi); pos[i*3+1]=r*Math.sin(a)*Math.sin(phi); pos[i*3+2]=r*Math.cos(phi); }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3)); const pMat=new THREE.PointsMaterial({size:2,sizeAttenuation:true,transparent:true,opacity:.55}); const stars=new THREE.Points(pGeo,pMat); scene.add(stars);
+
+    const onResize=()=>{ const w=container.clientWidth, h=container.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); applyDpr(); gl.setSize(w,h); css.setSize(w,h); };
+    window.addEventListener('resize', onResize, { signal: state.ctrl.signal }); const ro=new ResizeObserver(onResize); ro.observe(container); onResize();
+    return { scene,camera,gl,css,controls,root,stars,_ro:ro,_onResize:onResize };
+  }
+
+  function buildCards(state){
+    const objects=[]; const textCache=[];
+    const elFor=(title,meta,body,opts={})=>{ const el=document.createElement('div'); el.className='card3d'; if(opts.noexpand){ el.classList.add('noexpand'); } el.innerHTML=`<h4>${esc(title)}</h4>${meta?`<div class="meta">${esc(meta)}</div>`:''}<div class="body">${body||''}</div>`; if(opts.style){ Object.keys(opts.style).forEach(k=> el.style[k]=opts.style[k]); } return el; };
+    for(const c of CARD_DATA){ const el=elFor(c.title,c.meta,c.body,c.opts||{}); el.id=c.id; const obj=new THREE.CSS3DObject(el); obj.scale.set(c.layout.scale,c.layout.scale,c.layout.scale); obj.cardData=c; state.root.add(obj); objects.push(obj); textCache.push(el.textContent.toLowerCase()); }
+    return { objects, textCache };
+  }
+
+  function createLayouts(state){
+    const { objects } = state; const V=THREE.Vector3;
+    const animateTo=(obj,target,dur=650)=>{ const start=obj.position.clone(); const t0=performance.now(); state.tweens.push(now=>{ const t=Math.min(1,(now-t0)/dur); obj.position.lerpVectors(start,target,easeInOutCubic(t)); return t<1; }); };
+    const look=(o,to)=> o.lookAt(to||new V(0,0,0));
+    const applyOffset=(obj,target)=>{ const p=obj.cardData?.layout?.position||{x:0,y:0,z:0}; target.x+=p.x||0; target.y+=p.y||0; target.z+=p.z||0; return target; };
+    return {
+      sphere(){
+        const auto=objects.filter(o=>!o.cardData?.manualLayout); const manual=objects.filter(o=>o.cardData?.manualLayout);
+        const N=auto.length, r=state.radius;
+        for(let i=0;i<N;i++){ const o=auto[i]; const phi=Math.acos(-1+(2*i)/N); const theta=Math.sqrt(N*Math.PI)*phi; let target=new V(r*Math.cos(theta)*Math.sin(phi), r*Math.sin(theta)*Math.sin(phi), r*Math.cos(phi)); target=applyOffset(o,target); animateTo(o,target); look(o); }
+        for(const o of manual){ const p=o.cardData.layout.position; const target=new V(p.x,p.y,p.z); animateTo(o,target); look(o); }
+      }
+    };
+  }
+
+  function interactions(state){ const {ctrl, css, container}=state; let mQueued=false, mX=0,mY=0; css.domElement.addEventListener('pointermove', (e)=>{ mX=e.clientX; mY=e.clientY; if(mQueued) return; mQueued=true; requestAnimationFrame(()=>{ mQueued=false; const r=css.domElement.getBoundingClientRect(); const x=(mX-r.left)/r.width*2-1; const y=(mY-r.top)/r.height*2-1; state.mx=x; state.my=y; container.style.setProperty('--bgx', `${50+state.mx*20}%`); container.style.setProperty('--bgy', `${40+state.my*15}%`); }); }, { passive:true, signal: ctrl.signal });
+    state.objects.forEach(o=>{ o.element.addEventListener('mouseenter', ()=>{ o.element.style.borderColor = 'var(--accent)'; }, { signal: ctrl.signal }); o.element.addEventListener('mouseleave', ()=>{ o.element.style.borderColor = 'var(--border)'; }, { signal: ctrl.signal }); o.element.addEventListener('click', ()=> focusObject(state,o), { signal: ctrl.signal }); }); }
+
+  function tweenVec3(state, vec, to, dur=700){ const s=vec.clone?vec.clone():new THREE.Vector3(vec.x,vec.y,vec.z); const t0=performance.now(); state.tweens.push(now=>{ const t=Math.min(1,(now-t0)/dur); const k=easeInOutCubic(t); vec.set(s.x+(to.x-s.x)*k, s.y+(to.y-s.y)*k, s.z+(to.z-s.z)*k); return t<1; }); }
+  function animateCameraZ(state, camera, fromZ, toZ, dur=800){ const start=fromZ, d=toZ-fromZ, t0=performance.now(); camera.position.z=start; state.tweens.push(now=>{ const t=Math.min(1,(now-t0)/dur); camera.position.z = start + d* easeInOutCubic(t); return t<1; }); }
+  function focusObject(state,o){ const target=o.position.clone(); const camDir=state.camera.position.clone().sub(state.controls.target).normalize(); const camPos=target.clone().add(camDir.multiplyScalar(600)); tweenVec3(state, state.controls.target, target, 700); tweenVec3(state, state.camera.position, camPos, 700); }
+  
+
+  function startLoop(state){
+    const {controls, gl, css, scene, camera} = state;
+    let last = performance.now(), acc = 0, frames = 0, lowAcc = 0, hiAcc = 0;
+    const fpsEl = document.getElementById('fps');
+    const tilt = () => {
+      const { mx, my, root, autoRotate } = state;
+      root.rotation.y += (mx * 0.35 - root.rotation.y) * 0.04;
+      root.rotation.x += (-my * 0.25 - root.rotation.x) * 0.04;
+      if (autoRotate) { root.rotation.y += 0.002; }
+    };
+    (function animate(){
+      state._raf = requestAnimationFrame(animate);
+      if (document.hidden) return;
+      controls.update();
+      tilt();
+      // Face camera every frame (billboard like PC version)
+      if (state.objects && camera) {
+        const camPos = camera.position.clone();
+        for (const o of state.objects) { try { o.lookAt(camPos); } catch {} }
+      }
+      if (state.tweens && state.tweens.length) {
+        const now = performance.now();
+        state.tweens = state.tweens.filter(fn => { try { return fn(now); } catch { return false; } });
+      }
+      gl.render(scene, camera);
+      css.render(scene, camera);
+      const now2 = performance.now();
+      const dt = now2 - last; last = now2; acc += dt; frames++;
+      if (acc > 500) {
+        const fps = Math.round(1000 / (acc / frames));
+        if (fpsEl) fpsEl.textContent = 'fps: ' + fps;
+        if (fps < 30) { lowAcc += acc; hiAcc = 0; }
+        else if (fps > 50) { hiAcc += acc; lowAcc = 0; }
+        else { lowAcc = hiAcc = 0; }
+        if (lowAcc > 1200 && state.dprTarget > 1) { state.dprTarget = 1; if (state._onResize) state._onResize(); toast('Perf: DPR→1'); lowAcc = 0; }
+        if (hiAcc > 1500 && state.dprTarget < 2) { state.dprTarget = 2; if (state._onResize) state._onResize(); toast('Perf: DPR→2'); hiAcc = 0; }
+        acc = 0; frames = 0;
+      }
+    })();
+  }
+
+  function init3DScene(){ const wrap=document.querySelector('.wrap'); wrap.classList.add('three-active'); const container=document.getElementById('stage3d'); if(!window.THREE||!THREE.OrbitControls||!THREE.CSS3DRenderer){ const fb=document.createElement('div'); fb.style.padding='16px'; fb.innerHTML='<h3>Fallback</h3><p>3D libs unavailable.</p>'; container.appendChild(fb); toast('3D libs unavailable → fallback 2D'); return; }
+    const state={ ctrl:new AbortController(), dprTarget:2, container, wrap, radius:560, layout:'sphere', autoRotate:true, focused:null, textCache:[], mx:0, my:0, tweens:[], _raf:null, _ro:null };
+    Object.assign(state, buildScene(state)); Object.assign(state, buildCards(state)); state.layouts = createLayouts(state); state.applyLayout=(name)=>{ state.layout=name; (state.layouts[name]||state.layouts.sphere).call(state.layouts); }; interactions(state); animateCameraZ(state, state.camera, 900, 1240, 900); state.applyLayout('sphere'); startLoop(state); }
+
+  function boot(){
+    const veiled=document.getElementById('veiled-container');
+    const wrap=document.querySelector('.wrap');
+    const activate=()=>{
+      if(veiled){ veiled.style.display='none'; veiled.classList.add('hidden'); }
+      if(wrap){ wrap.classList.remove('hidden'); wrap.classList.add('visible'); }
+      init3DScene();
+      stamp();
+    };
+    // Auto-activate immediately (skip veiled/sync step)
+    activate();
+    // Keep button as fallback if present
+    const btn=document.getElementById('btn-activate');
+    if(btn) btn.addEventListener('click', activate);
+  }
+  window.addEventListener('DOMContentLoaded', boot);
+  </script>
+</body>
+</html>
