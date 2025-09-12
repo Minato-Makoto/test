@@ -176,6 +176,20 @@
     const gl = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance', stencil:false });
     const applyDpr=()=> { gl.setPixelRatio(1); };
     applyDpr(); gl.setSize(container.clientWidth, container.clientHeight); container.appendChild(gl.domElement);
+    gl.domElement.addEventListener('webglcontextlost', (e)=>{
+      e.preventDefault();
+      try{ if(state._raf) cancelAnimationFrame(state._raf); state._raf=null; }catch{}
+      try{ state.ctrl.abort(); }catch{}
+      try{ state._ro?.disconnect?.(); }catch{}
+      const msg=document.createElement('div'); msg.className='ctx-lost'; msg.textContent='WebGL context lost. Please reload.';
+      Object.assign(msg.style,{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',background:'rgba(0,0,0,0.7)',color:'#fff',padding:'12px 16px',borderRadius:'4px',textAlign:'center'});
+      container.appendChild(msg);
+    },{once:true});
+    gl.domElement.addEventListener('webglcontextrestored',()=>{
+      const msg=container.querySelector('.ctx-lost'); if(msg) msg.remove();
+      container.innerHTML='';
+      init3DScene();
+    },{once:true});
     const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='manipulation'; container.appendChild(css.domElement);
     scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
     const root=new THREE.Group(); scene.add(root);
