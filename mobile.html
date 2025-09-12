@@ -69,8 +69,8 @@
       font-family: 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Noto Sans', 'Roboto', 'Segoe UI', 'Arial', 'Liberation Sans', 'Helvetica Neue', sans-serif;
       font-size:42px; line-height:1.5; font-weight:700;
       box-shadow:0 20px 40px rgba(0,0,0,.45); transform:translateZ(0); transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease; position:relative; overflow:hidden; }
-    /* Grain layer (under) */
-    .card3d::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.18; mix-blend-mode:soft-light; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="120" height="120" fill="white" filter="url(%23n)"/></svg>'); background-size:220px 220px; background-repeat:repeat; }
+    /* Grain layer disabled for iOS stability */
+    .card3d::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; display:none; }
     /* Extra blur layer (middle) */
     .card3d::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background: rgba(17,23,42,0.25); }
     /* iOS lite overrides (stability) */
@@ -277,16 +277,11 @@
       if (document.hidden) return;
       controls.update();
       tilt();
-      // Animate particles: gentle rotation + soft twinkle
+      // Animate particles: gentle rotation only (iOS-safe)
       if (state.stars) {
         try {
           state.stars.rotation.y += 0.00025;
           state.stars.rotation.x += 0.00005;
-          const mat = state.stars.material;
-          if (mat && typeof mat.opacity === 'number') {
-            const t = performance.now() * 0.0006;
-            mat.opacity = 0.6 + 0.1 * Math.sin(t);
-          }
         } catch {}
       }
       // Face camera every frame (billboard like PC version)
