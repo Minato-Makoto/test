@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Portfolio Mobile • 3D CSS (Optimized)</title>
+  <title>Minato Makoto | Interactive Portfolio</title>
 
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -52,7 +52,8 @@
     .wrap { max-width:100%; margin:0 auto; padding:0; position:relative; }
     .wrap.hidden { display:none; opacity:0; }
     .wrap.visible { display:block; opacity:1; transition:opacity .5s ease-in; }
-    .footer { margin:0; color:#94a3b8; font-size:12px; padding:10px 16px; position:absolute; bottom:0; left:0; }
+    .footer { margin:0; color:#94a3b8; font-size:12px; padding:10px 16px; position:absolute; bottom:0; right:0; left:auto; }
+    .footer #ts { display:none; }
 
     .stage3d { position:relative; width:100%; height:100vh; min-height:580px; border-top:1px solid var(--border); overflow:hidden; --bgx:30%; --bgy:20%; background:radial-gradient(1200px 600px at var(--bgx) var(--bgy), var(--bg-grad1) 0%, var(--bg-grad2) 60%, var(--bg-grad3) 100%); touch-action:none; }
     @supports (height: 100svh) { .stage3d { height: 100svh; } }
@@ -68,11 +69,15 @@
       font-family: 'SF Pro Display', 'SF Pro Text', 'San Francisco', 'Noto Sans', 'Roboto', 'Segoe UI', 'Arial', 'Liberation Sans', 'Helvetica Neue', sans-serif;
       font-size:42px; line-height:1.5; font-weight:700;
       box-shadow:0 20px 40px rgba(0,0,0,.45); transform:translateZ(0); transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease; backdrop-filter: blur(4px); position:relative; overflow:hidden; }
+    /* Grain layer (under) */
     .card3d::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.18; mix-blend-mode:soft-light; background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="120" height="120" fill="white" filter="url(%23n)"/></svg>'); background-size:220px 220px; background-repeat:repeat; }
+    /* Extra blur layer (middle) */
+    .card3d::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; backdrop-filter: blur(4px); background: rgba(17,23,42,0.18); }
     /* iOS lite overrides (stability) */
     .ios-lite .card3d { backdrop-filter: none; box-shadow: 0 10px 20px rgba(0,0,0,.35); }
     .ios-lite .card3d::before { display: none; }
-    .card3d > * { position:relative; z-index:1; }
+    .ios-lite .card3d::after { backdrop-filter: none; background: rgba(17,23,42,0.25); }
+    .card3d > * { position:relative; z-index:2; }
     .card3d h4 { margin:0 0 12px 0; font-size:66px; text-transform:uppercase; letter-spacing:1px; font-weight:900; }
     .card3d .meta { color:var(--muted); font-size:42px; margin-bottom:12px; font-weight:600; }
     .card3d .body { max-height:0; overflow:hidden; transition:max-height .35s ease; font-size:32px; line-height:1.7; }
@@ -97,12 +102,12 @@
   <div class="wrap visible">
     <div id="stage3d" class="stage3d">
       <div class="hud">
-        <div class="brand">PORTFOLIO • MOBILE</div>
+        <div class="brand">AI'S FRIEND PRODUCTION</div>
         
         <div id="fps" class="fps">fps: --</div>
       </div>
     </div>
-    <div class="footer">for Minato-sama · <span id="ts"></span></div>
+    <div class="footer">© 2025 ⛧<span id="ts"></span></div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -114,7 +119,14 @@
   <script>
   // Util
   function pad(n){return n.toString().padStart(2,'0')}
-  function stamp(){ const d=new Date(); const ts=`${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}Z`; const el=document.querySelector('#ts'); if (el) el.textContent=ts; }
+  function stamp(){
+    const now = new Date();
+    const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+    const local7 = new Date(utcMs + 7 * 60 * 60 * 1000);
+    const ts = `${local7.getFullYear()}-${pad(local7.getMonth()+1)}-${pad(local7.getDate())} ${pad(local7.getHours())}:${pad(local7.getMinutes())}:${pad(local7.getSeconds())} GMT+7`;
+    const el = document.querySelector('#ts');
+    if (el) el.textContent = ts;
+  }
   function easeInOutCubic(t){ return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2 }
   function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1500); }
   function esc(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
@@ -179,7 +191,7 @@
     // Use round sprite texture for particles
     const particleTexture = (function(){
       const c=document.createElement('canvas'); c.width=c.height=64; const ctx=c.getContext('2d'); const r=32; const g=ctx.createRadialGradient(r,r,0,r,r,r); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,1)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); t.needsUpdate=true; return t; })();
-    const pMat=new THREE.PointsMaterial({ size: 1, sizeAttenuation:true, map: particleTexture, transparent:true, opacity:.6, depthWrite:false });
+    const pMat=new THREE.PointsMaterial({ size: 1.5, sizeAttenuation:true, map: particleTexture, transparent:true, opacity:.6, depthWrite:false });
     const stars=new THREE.Points(pGeo,pMat); scene.add(stars);
 
     const onResize=()=>{ const w=container.clientWidth, h=container.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); applyDpr(); gl.setSize(w,h); css.setSize(w,h); };
@@ -299,7 +311,7 @@
     const state={ ctrl:new AbortController(), dprTarget: isIOS ? 1 : 2, container, wrap, radius:560, layout:'sphere', autoRotate:true, focused:null, textCache:[], mx:0, my:0, tweens:[], _raf:null, _ro:null, isIOS };
     Object.assign(state, buildScene(state)); Object.assign(state, buildCards(state)); state.layouts = createLayouts(state); state.applyLayout=(name)=>{ state.layout=name; (state.layouts[name]||state.layouts.sphere).call(state.layouts); }; interactions(state); animateCameraZ(state, state.camera, 900, 1240, 900); state.applyLayout('sphere'); startLoop(state); }
 
-  function boot(){ init3DScene(); stamp(); }
+  function boot(){ init3DScene(); stamp(); try{ window.__tsInterval = setInterval(stamp, 1000); }catch{} }
   window.addEventListener('DOMContentLoaded', boot);
   </script>
 </body>
