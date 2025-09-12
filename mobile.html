@@ -223,9 +223,23 @@
       o.element.addEventListener('mouseleave', ()=>{ o.element.style.borderColor = 'var(--border)'; }, { signal: ctrl.signal }); 
       const isExpandable = !o.element.classList.contains('noexpand');
       const handleToggle = (e)=>{ try{ if (e && e.target && e.target.closest && e.target.closest('a')) return; }catch{} if(isExpandable){ o.element.classList.toggle('open'); } };
+      // Treat click as tap fallback
       o.element.addEventListener('click', handleToggle, { signal: ctrl.signal });
-      o.element.addEventListener('pointerup', handleToggle, { signal: ctrl.signal });
-      o.element.addEventListener('touchend', handleToggle, { signal: ctrl.signal });
+      // Precise tap detection + temporarily disable controls to avoid swallowing tap
+      o.element.addEventListener('pointerdown', (e)=>{
+        o.__down = { x: e.clientX || 0, y: e.clientY || 0, t: performance.now() };
+        try{ if(state.controls) state.controls.enabled = false; }catch{}
+      }, { signal: ctrl.signal });
+      o.element.addEventListener('pointercancel', ()=>{ try{ if(state.controls) state.controls.enabled = true; }catch{} }, { signal: ctrl.signal });
+      o.element.addEventListener('pointerup', (e)=>{
+        try{ setTimeout(()=>{ if(state.controls) state.controls.enabled = true; }, 60); }catch{}
+        const d = o.__down; o.__down = null;
+        if(!d) return;
+        const dx = Math.abs((e.clientX||0) - d.x);
+        const dy = Math.abs((e.clientY||0) - d.y);
+        const dt = performance.now() - d.t;
+        if (dx < 8 && dy < 8 && dt < 280) handleToggle(e);
+      }, { signal: ctrl.signal });
 
       // Make anchors inside cards reliably clickable on mobile (prevent OrbitControls from swallowing the gesture)
       const anchors = o.element.querySelectorAll('a');
