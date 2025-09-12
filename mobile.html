@@ -84,7 +84,8 @@
     .card3d:hover { transform:translateZ(12px) scale(1.03); border-color:var(--accent); box-shadow:0 24px 60px rgba(0,0,0,.55); }
     .card3d:hover .body { max-height:440px; }
     .mono { font-family: ui-monospace, Menlo, monospace; }
-    .card3d iframe { display:block; width:100% !important; height:auto !important; aspect-ratio:16/9; border-radius:12px; border:none; box-shadow:0 4px 24px rgba(0,0,0,0.18); }
+    /* Ensure no iframe renders inside cards on Mobile */
+    .card3d iframe { display:none !important; }
     /* Thumbnail-only video (no iframe)
        Center play overlay perfectly */
     .video-thumb { position:relative; display:block; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#111; text-decoration:none; }
@@ -199,6 +200,9 @@
     const objects=[]; const textCache=[];
     const elFor=(title,meta,body,opts={})=>{ const el=document.createElement('div'); el.className='card3d'; if(opts.noexpand){ el.classList.add('noexpand'); } el.innerHTML=`<h4>${esc(title)}</h4>${meta?`<div class="meta">${esc(meta)}</div>`:''}<div class="body">${body||''}</div>`; if(opts.style){ Object.keys(opts.style).forEach(k=> el.style[k]=opts.style[k]); } return el; };
     for(const c of CARD_DATA){ let bodyHTML=c.body; const src=extractIframeSrc(bodyHTML); if(src){ const v=videoLinkAndThumb(src); const img = v.thumb ? `<img loading=\"lazy\" src=\"${v.thumb}\" alt=\"${esc(c.title)} thumbnail\">` : ''; bodyHTML = `<a class=\"video-thumb\" href=\"${v.url}\" target=\"_blank\" rel=\"noopener\" onclick=\"event.stopPropagation()\">${img}<div class=\"play\">▶</div></a>`; } const el=elFor(c.title,c.meta,bodyHTML,c.opts||{}); el.id=c.id; const obj=new THREE.CSS3DObject(el); obj.scale.set(c.layout.scale,c.layout.scale,c.layout.scale); obj.cardData=c; state.root.add(obj); objects.push(obj); textCache.push(el.textContent.toLowerCase()); }
+    try {
+      objects.forEach(o => { try { o.element.querySelectorAll('iframe').forEach(n => n.remove()); } catch {} });
+    } catch {}
     return { objects, textCache };
   }
 
