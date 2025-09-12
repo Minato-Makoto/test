@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Đường dẫn ĐÃ ĐƯỢC SỬA LẠI cho chính xác
-          path: './dist'
+          path: './dist/browser'
 
       # Bước 7: Deploy lên GitHub Pages
       - name: Deploy to GitHub Pages
