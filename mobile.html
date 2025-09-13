@@ -43,7 +43,7 @@
 
     #veiled-container { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:100vh; padding:24px; gap:14px; transition:opacity .5s ease-out; }
     #veiled-container.hidden { opacity:0; pointer-events:none; }
-    .title-veiled { font-weight:800; font-size:28px; letter-spacing:.4px; }
+    .title-veiled { font-weight:800; font-size:25px; letter-spacing:.4px; }
     .badge-veiled { background:linear-gradient(135deg,#22c55e33,#22c55e22); color:#a7f3d0; border:1px solid #14532d; padding:6px 10px; border-radius:999px; font-size:12px; display:inline-block; }
     #btn-activate { background:var(--card-bg); border:1px solid var(--border); color:var(--ink); padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; letter-spacing:.5px; }
     #btn-activate:hover { border-color:var(--border-strong); }
@@ -193,7 +193,7 @@
     const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='auto'; container.appendChild(css.domElement);
     scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
     const root=new THREE.Group(); scene.add(root);
-    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.01; controls.minDistance=0; controls.maxDistance=2200; controls.target.set(0,0,0);
+    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=0.05; controls.minDistance=0; controls.maxDistance=2200; controls.target.set(0,0,0);
 
     // background stars (reduced on iOS)
     const starCount = 1200; const pGeo=new THREE.BufferGeometry(); const pos=new Float32Array(starCount*3);
@@ -235,7 +235,7 @@
     };
   }
 
-  function interactions(state){ const {ctrl, css, container}=state; let mQueued=false, mX=0,mY=0; css.domElement.addEventListener('pointermove', (e)=>{ mX=e.clientX; mY=e.clientY; if(mQueued) return; mQueued=true; requestAnimationFrame(()=>{ mQueued=false; const r=css.domElement.getBoundingClientRect(); const x=(mX-r.left)/r.width*2-1; const y=(mY-r.top)/r.height*2-1; state.mx=x; state.my=y; container.style.setProperty('--bgx', `${50+state.mx*20}%`); container.style.setProperty('--bgy', `${40+state.my*15}%`); }); }, { passive:true, signal: ctrl.signal });
+  function interactions(state){ const {ctrl, css, container}=state; let mQueued=false, mX=0,mY=0;
     state.objects.forEach(o=>{ 
       o.element.addEventListener('mouseenter', ()=>{ o.element.style.borderColor = 'var(--accent)'; }, { signal: ctrl.signal }); 
       o.element.addEventListener('mouseleave', ()=>{ o.element.style.borderColor = 'var(--border)'; }, { signal: ctrl.signal }); 

@@ -466,7 +466,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     
     const particleTexture = this.createCircleTexture();
     const particlesMaterial = new THREE.PointsMaterial({
-      size: 1,
+      size: 1.5,
       vertexColors: true,
       map: particleTexture,
       transparent: true,
