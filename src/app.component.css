@@ -155,13 +155,13 @@
 
 :host #btn-activate:hover::before,
 :host #btn-mobile:hover::before {
-  content: '🞂';
+  content: '▸';
   opacity: 1;
 }
 
 :host #btn-activate:hover::after,
 :host #btn-mobile:hover::after {
-  content: '🞀';
+  content: '◂';
   opacity: 1;
 }
 :host #btn-activate:disabled,
