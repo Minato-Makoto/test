@@ -42,6 +42,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private guideService = inject(GuideService);
   private backgroundService = inject(BackgroundService);
   private witnessCard = new WitnessCardComponent(this.renderer2, this.guideService);
+  private threeLibsLoaded = false;
 
   // View Children for DOM elements
   veiledContainer = viewChild<ElementRef<HTMLDivElement>>('veiledContainer');
@@ -282,15 +283,38 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (!veiled || !wrap || this.isActivating()) return;
 
     this.isActivating.set(true);
-    
+
     this.renderer2.addClass(veiled, 'hidden');
-    setTimeout(() => {
+    setTimeout(async () => {
       this.renderer2.setStyle(veiled, 'display', 'none');
       this.renderer2.removeClass(wrap, 'hidden');
       this.renderer2.addClass(wrap, 'visible');
-      this.init3DScene();
-      this.isActivating.set(false); // Set to false after scene is ready
+      try {
+        await this.loadThreeLibs();
+        this.init3DScene();
+      } finally {
+        this.isActivating.set(false); // Set to false after scene is ready
+      }
     }, 500);
+  }
+
+  private async loadThreeLibs(): Promise<void> {
+    if (this.threeLibsLoaded) return;
+    const load = (src: string) => new Promise<void>((resolve, reject) => {
+      const s = this.renderer2.createElement('script');
+      s.src = src;
+      s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject();
+      this.renderer2.appendChild(document.body, s);
+    });
+
+    await load('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+    await Promise.all([
+      load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'),
+      load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js')
+    ]);
+    this.threeLibsLoaded = true;
   }
 
   // --- Utilities ---
