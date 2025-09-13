@@ -193,7 +193,7 @@
     const css = new THREE.CSS3DRenderer(); css.setSize(container.clientWidth, container.clientHeight); css.domElement.className='css3d'; css.domElement.style.touchAction='auto'; container.appendChild(css.domElement);
     scene.add(new THREE.AmbientLight(0xffffff,.55)); const point=new THREE.PointLight(0xffffff,.9); point.position.set(420,350,420); scene.add(point);
     const root=new THREE.Group(); scene.add(root);
-    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.05; controls.minDistance=0; controls.maxDistance=2200; controls.target.set(0,0,0);
+    const controls = new THREE.OrbitControls(camera, css.domElement); controls.enableDamping=true; controls.dampingFactor=.01; controls.minDistance=0; controls.maxDistance=2200; controls.target.set(0,0,0);
 
     // background stars (reduced on iOS)
     const starCount = 1200; const pGeo=new THREE.BufferGeometry(); const pos=new Float32Array(starCount*3);
