@@ -13,9 +13,9 @@ import { CommonModule } from '@angular/common';
 import { GuideService } from './guide.service';
 import { BackgroundService } from './background.service';
 import { WitnessCardComponent } from './components/witness-card/witness-card.component';
-
-// Make THREE available in the component context, as it's loaded from a script tag.
-declare const THREE: any;
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 interface CardData {
   id: string;
@@ -42,7 +42,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private guideService = inject(GuideService);
   private backgroundService = inject(BackgroundService);
   private witnessCard = new WitnessCardComponent(this.renderer2, this.guideService);
-  private threeLibsLoaded = false;
 
   // View Children for DOM elements
   veiledContainer = viewChild<ElementRef<HTMLDivElement>>('veiledContainer');
@@ -290,31 +289,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.renderer2.removeClass(wrap, 'hidden');
       this.renderer2.addClass(wrap, 'visible');
       try {
-        await this.loadThreeLibs();
         this.init3DScene();
       } finally {
         this.isActivating.set(false); // Set to false after scene is ready
       }
     }, 500);
-  }
-
-  private async loadThreeLibs(): Promise<void> {
-    if (this.threeLibsLoaded) return;
-    const load = (src: string) => new Promise<void>((resolve, reject) => {
-      const s = this.renderer2.createElement('script');
-      s.src = src;
-      s.defer = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject();
-      this.renderer2.appendChild(document.body, s);
-    });
-
-    await load('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
-    await Promise.all([
-      load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'),
-      load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js')
-    ]);
-    this.threeLibsLoaded = true;
   }
 
   // --- Utilities ---
@@ -403,8 +382,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   // --- 3D Scene Initialization ---
   private init3DScene(): void {
     const container = this.stage3d()?.nativeElement;
-    if (!container || typeof THREE === 'undefined' || !THREE.OrbitControls || !THREE.CSS3DRenderer) {
-      console.error('3D libraries unavailable.');
+    if (!container) {
+      console.error('3D container unavailable.');
       return;
     }
 
@@ -479,7 +458,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.threeState.particles = particles;
 
 
-    const css = new THREE.CSS3DRenderer();
+    const css = new CSS3DRenderer();
     css.setSize(container.clientWidth, container.clientHeight);
     css.domElement.className = 'css3d';
     container.appendChild(css.domElement);
@@ -493,7 +472,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const root = new THREE.Group();
     scene.add(root);
 
-    const controls = new THREE.OrbitControls(camera, css.domElement);
+    const controls = new OrbitControls(camera, css.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.minDistance = 260;
@@ -521,7 +500,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       const el = this.createCardEl(cardData.title, cardData.meta, cardData.body, cardData.opts);
       this.renderer2.setAttribute(el, 'id', cardData.id);
 
-      const obj = new THREE.CSS3DObject(el);
+      const obj = new CSS3DObject(el);
       const { scale } = cardData.layout;
       obj.scale.set(scale, scale, scale);
       (obj as any).cardData = cardData;
@@ -743,7 +722,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const effect = this.generateEffectEmoji();
     k.textContent = `${effect}${face}${effect}`;
 
-    const obj = new THREE.CSS3DObject(k);
+    const obj = new CSS3DObject(k);
     
     // TỰ ĐIỀU CHỈNH Ở ĐÂY ------------------
     // Thay đổi giá trị 0.5 để Kaomoji to hoặc nhỏ hơn.
