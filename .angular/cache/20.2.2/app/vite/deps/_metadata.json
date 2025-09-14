@@ -1,34 +1,58 @@
 {
-  "hash": "d9b0d146",
-  "configHash": "3370d60b",
-  "lockfileHash": "24355a99",
-  "browserHash": "b66f3f8c",
+  "hash": "0ea5db97",
+  "configHash": "1255c287",
+  "lockfileHash": "caabe878",
+  "browserHash": "8582dda8",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "f13c6ac1",
+      "fileHash": "984360a0",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "1df5f7c3",
+      "fileHash": "b7d4aff6",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "dc6f1ff0",
+      "fileHash": "e31444cb",
+      "needsInterop": false
+    },
+    "three": {
+      "src": "../../../../../../node_modules/three/build/three.module.js",
+      "file": "three.js",
+      "fileHash": "e209bb16",
+      "needsInterop": false
+    },
+    "three/examples/jsm/controls/OrbitControls.js": {
+      "src": "../../../../../../node_modules/three/examples/jsm/controls/OrbitControls.js",
+      "file": "three_examples_jsm_controls_OrbitControls__js.js",
+      "fileHash": "fec29298",
+      "needsInterop": false
+    },
+    "three/examples/jsm/renderers/CSS3DRenderer.js": {
+      "src": "../../../../../../node_modules/three/examples/jsm/renderers/CSS3DRenderer.js",
+      "file": "three_examples_jsm_renderers_CSS3DRenderer__js.js",
+      "fileHash": "9e6ce6ba",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-3FOBOWAJ": {
-      "file": "chunk-3FOBOWAJ.js"
+    "chunk-MI6GQXBS": {
+      "file": "chunk-MI6GQXBS.js"
     },
-    "chunk-53FOPTSH": {
-      "file": "chunk-53FOPTSH.js"
+    "chunk-WVZ3TGWB": {
+      "file": "chunk-WVZ3TGWB.js"
+    },
+    "chunk-2L4L3NPL": {
+      "file": "chunk-2L4L3NPL.js"
+    },
+    "chunk-GOMI4DH3": {
+      "file": "chunk-GOMI4DH3.js"
     }
   }
 }
