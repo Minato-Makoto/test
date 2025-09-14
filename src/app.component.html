@@ -24,7 +24,9 @@
       PC Version
     }
   </button>
-  <button id="btn-mobile" type="button">Mobile Version</button>
+  <button #btnMobile id="btn-mobile" type="button" [disabled]="isActivating()">
+    @if (isActivating()) { CONNECTING... } @else { Mobile Version }
+  </button>
 </div>
 
 <!-- Activated State (3D UI) -->

@@ -49,6 +49,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   titleVeiled = viewChild<ElementRef<HTMLDivElement>>('titleVeiled');
   kaoVeiled = viewChild<ElementRef<HTMLSpanElement>>('kaoVeiled');
   btnActivate = viewChild<ElementRef<HTMLButtonElement>>('btnActivate');
+  btnMobile = viewChild<ElementRef<HTMLButtonElement>>('btnMobile');
   stage3d = viewChild<ElementRef<HTMLDivElement>>('stage3d');
   fpsEl = viewChild<ElementRef<HTMLDivElement>>('fps');
 
@@ -238,6 +239,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.boot();
     this.backgroundService.start();
+
+    const mobileBtn = this.btnMobile()?.nativeElement;
+    if (mobileBtn) {
+      this._listeners.push(
+        this.renderer2.listen(mobileBtn, 'click', () => {
+          if (this.isActivating()) return;
+          this.isActivating.set(true);
+          setTimeout(() => { window.location.href = 'mobile.html'; }, 500);
+        })
+      );
+    }
   }
 
   ngOnDestroy(): void {
@@ -267,13 +279,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         );
     }
 
-    // Hook existing Mobile Version button to open the optimized mobile page
-    const mobileBtn = document.getElementById('btn-mobile') as HTMLButtonElement | null;
-    if (mobileBtn) {
-      this._listeners.push(
-        this.renderer2.listen(mobileBtn, 'click', () => { window.location.href = 'mobile.html'; })
-      );
-    }
   }
   
   private activatePortfolio(): void {
